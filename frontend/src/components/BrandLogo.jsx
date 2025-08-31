@@ -4,13 +4,14 @@ import React from "react";
   BrandLogo: Original mark for MegaMind_X
   - Left skew (skew-x-6)
   - Faster entrance animation (mmxFadeIn ~520ms)
-  - Teal glow on hover (#22d3ee), adjustable via glowStrong
+  - Teal glow on hover (#22d3ee), adjustable via glowMode: "soft" | "medium" | "strong"
 */
-export default function BrandLogo({ className = "", size = 22, label = "MegaMind_X", glowStrong = false }) {
-  const strong = glowStrong;
-  const svgGlowClass = strong
-    ? "group-hover:drop-shadow-[0_0_18px_rgba(34,211,238,0.70)] group-hover:scale-[1.06]"
-    : "group-hover:drop-shadow-[0_0_12px_rgba(34,211,238,0.40)] group-hover:scale-[1.04]";
+export default function BrandLogo({ className = "", size = 22, label = "MegaMind_X", glowMode = "strong" }) {
+  const glowClass = {
+    soft: "group-hover:drop-shadow-[0_0_10px_rgba(34,211,238,0.35)] group-hover:scale-[1.03]",
+    medium: "group-hover:drop-shadow-[0_0_14px_rgba(34,211,238,0.5)] group-hover:scale-[1.045]",
+    strong: "group-hover:drop-shadow-[0_0_18px_rgba(34,211,238,0.7)] group-hover:scale-[1.06]",
+  }[glowMode] || "";
 
   return (
     <div
@@ -22,7 +23,7 @@ export default function BrandLogo({ className = "", size = 22, label = "MegaMind
         width={size}
         height={size}
         viewBox="0 0 24 24"
-        className={`mr-2 transition-[filter,transform] duration-300 ${svgGlowClass}`}
+        className={`mr-2 transition-[filter,transform] duration-300 ${glowClass}`}
         aria-hidden
       >
         {/* Cyan spark */}

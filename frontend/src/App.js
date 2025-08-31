@@ -18,6 +18,8 @@ import { Toaster } from "./components/ui/toaster";
 import { Moon, Sun, Globe2, ShieldCheck, Database, Settings2, Command } from "lucide-react";
 import { getAgents, refreshAgents, patchAgent, getHistory, createHistory, sseUrl } from "./lib/api";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./components/ui/command";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
 
 function useTheme() {
   const [theme, setTheme] = useState(loadFromStorage(STORAGE_KEYS.theme, "dark"));
@@ -30,11 +32,20 @@ function useTheme() {
   return { theme, setTheme };
 }
 
-function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, panels, setPanels, onOpenCmd, glowStrong, setGlowStrong }) {
+function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, panels, setPanels, onOpenCmd, glowMode, setGlowMode }) {
   return (
     <div className="h-14 border-b border-border flex items-center justify-between px-3 md:px-4 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50">
       <div className="flex items-center gap-2 md:gap-3">
-        <BrandLogo className="hidden md:inline-flex mr-2" size={18} glowStrong={glowStrong} />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <BrandLogo className="hidden md:inline-flex mr-2" size={18} glowMode={glowMode} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>{t.logoTooltip}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <TabsList className="hidden md:flex">
           <TabsTrigger value="terminal">{t.terminal}</TabsTrigger>
           <TabsTrigger value="admin">{t.admin}</TabsTrigger>
@@ -55,7 +66,16 @@ function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, 
       <div className="flex items-center gap-2">
         <div className="hidden md:flex items-center gap-2 pr-3 mr-1 border-r border-border text-xs text-muted-foreground">
           <span>{t.logoGlow}</span>
-          <Switch checked={glowStrong} onCheckedChange={(v) => setGlowStrong(v)} />
+          <Select value={glowMode} onValueChange={(v) => setGlowMode(v)}>
+            <SelectTrigger className="w-28 h-8">
+              <SelectValue placeholder={t.glowMedium} />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="soft">{t.glowSoft}</SelectItem>
+              <SelectItem value="medium">{t.glowMedium}</SelectItem>
+              <SelectItem value="strong">{t.glowStrong}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <Button variant="ghost" size="icon" onClick={onOpenCmd} aria-label="Command">
           <Command className="w-5 h-5" />
@@ -80,61 +100,6 @@ function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, 
   );
 }
 
-function AdminPanel({ t, adminLevel }) {
-  const disabled = adminLevel < 50;
-  const FeatureRow = ({ icon: Icon, label }) => (
-    <div className="flex items-center justify-between py-2">
-      <div className="flex items-center gap-2 text-sm">
-        <Icon className="w-4 h-4 text-cyan-500" />
-        <span>{label}</span>
-      </div>
-      <Switch disabled={disabled} />
-    </div>
-  );
-  return (
-    <Card className="bg-card/70">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{t.features} • <span className="text-xs text-muted-foreground">{t.adminOnly}</span></CardTitle>
-      </CardHeader>
-      <Separator />
-      <CardContent className="pt-3">
-        <FeatureRow icon={Settings2} label={t.manageAgents} />
-        <FeatureRow icon={Database} label={t.clearCache} />
-        <FeatureRow icon={ShieldCheck} label={t.forceRestart} />
-        {disabled && (
-          <p className="text-xs text-muted-foreground mt-3">{t.adminOnly}: 50+</p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function HistoryPanel({ t, onLoad, history }) {
-  if (!history.length) return <div className="text-sm text-muted-foreground">{t.noHistory}</div>;
-  return (
-    <ScrollArea className="h-[600px] pr-2">
-      <div className="space-y-2">
-        {history.map(item => (
-          <Card key={item.id} className="hover:bg-accent/50 transition-colors">
-            <CardHeader className="py-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">{new Date(item.createdAt).toLocaleString()}</CardTitle>
-                <Button size="sm" variant="outline" onClick={() => onLoad(item)}>
-                  Load
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <pre className="text-xs text-muted-foreground whitespace-pre-wrap line-clamp-3">{item.content}</pre>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </ScrollArea>
-  );
-}
-
-
 function App() {
   // language (default RU)
   const [lang, setLang] = useState(loadFromStorage(STORAGE_KEYS.lang, LANG.RU));
@@ -147,9 +112,14 @@ function App() {
   const [adminLevel, setAdminLevel] = useState(loadFromStorage(STORAGE_KEYS.adminLevel, 40));
   useEffect(() => { saveToStorage(STORAGE_KEYS.adminLevel, adminLevel); }, [adminLevel]);
 
-  // logo glow strong
-  const [glowStrong, setGlowStrong] = useState(loadFromStorage(STORAGE_KEYS.logoGlow, true));
-  useEffect(() => { saveToStorage(STORAGE_KEYS.logoGlow, glowStrong); }, [glowStrong]);
+  // logo glow mode (migrate from old boolean if needed)
+  const [glowMode, setGlowMode] = useState(() => {
+    const v = loadFromStorage(STORAGE_KEYS.logoGlow, "strong");
+    if (typeof v === "boolean") return v ? "strong" : "soft";
+    if (["soft","medium","strong"].includes(v)) return v;
+    return "strong";
+  });
+  useEffect(() => { saveToStorage(STORAGE_KEYS.logoGlow, glowMode); }, [glowMode]);
 
   // session id for streaming
   const [sessionId] = useState(() => {
@@ -267,7 +237,7 @@ function App() {
             onSelectAgent={setSelectedAgentId}
             onToggleAgent={handleToggleAgent}
             onRefresh={handleRefreshStatuses}
-            glowStrong={glowStrong}
+            glowMode={glowMode}
           />
         </div>
         <div className="flex-1 flex flex-col">
@@ -283,8 +253,8 @@ function App() {
               panels={panels}
               setPanels={setPanels}
               onOpenCmd={() => setOpenCmd(true)}
-              glowStrong={glowStrong}
-              setGlowStrong={setGlowStrong}
+              glowMode={glowMode}
+              setGlowMode={(m) => setGlowMode(m)}
             />
 
             <div className="flex-1 p-3 md:p-4">

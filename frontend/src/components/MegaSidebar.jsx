@@ -6,19 +6,30 @@ import { Switch } from "./ui/switch";
 import { Badge } from "./ui/badge";
 import { ChevronDown, RefreshCcw } from "lucide-react";
 import BrandLogo from "./BrandLogo";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { tDict, LANG } from "../mock/mock";
 
 const StatusDot = ({ status }) => {
   const color = status === "online" ? "bg-emerald-500" : status === "broken" ? "bg-rose-500" : "bg-zinc-400";
   return <span className={`inline-block w-2.5 h-2.5 rounded-full ${color} mr-2`} />;
 };
 
-export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent, onToggleAgent, onRefresh, glowStrong = false }) {
+export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent, onToggleAgent, onRefresh, glowMode = "strong" }) {
   const selected = agents.find(a => a.id === selectedAgentId) || agents[0];
 
   return (
     <aside className="h-full w-full sm:w-72 bg-card/60 backdrop-blur-sm flex flex-col">
       <div className="px-4 py-4 border-b border-border flex items-center justify-end">
-        <BrandLogo glowStrong={glowStrong} />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <BrandLogo glowMode={glowMode} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent> {t.logoTooltip} </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <div className="px-3 py-3">

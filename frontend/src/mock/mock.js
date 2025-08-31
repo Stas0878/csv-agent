@@ -47,6 +47,10 @@ export const tDict = {
     nothingToShare: "Нечего отправлять",
     noHistory: "История пуста",
     logoGlow: "Свечение логотипа",
+    glowSoft: "Мягкое",
+    glowMedium: "Среднее",
+    glowStrong: "Яркое",
+    logoTooltip: "MegaMind_X — AI Control Hub",
   },
   en: {
     appName: "MegaMind_X",
@@ -83,6 +87,10 @@ export const tDict = {
     nothingToShare: "Nothing to share",
     noHistory: "No history",
     logoGlow: "Logo glow",
+    glowSoft: "Soft",
+    glowMedium: "Medium",
+    glowStrong: "Strong",
+    logoTooltip: "MegaMind_X — AI Control Hub",
   },
 };
 
@@ -122,7 +130,7 @@ export const STORAGE_KEYS = {
   history: "mmx_history",
   panels: "mmx_panels",
   adminLevel: "mmx_admin_level",
-  logoGlow: "mmx_logo_glow",
+  logoGlow: "mmx_logo_glow", // now stores: "soft" | "medium" | "strong"
 };
 
 export function loadFromStorage(key, fallback) {
