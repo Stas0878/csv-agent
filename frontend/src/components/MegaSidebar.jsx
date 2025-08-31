@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Switch } from "./ui/switch";
-import { Badge } from "../components/ui/badge";
+import { Badge } from "./ui/badge";
 import { ChevronDown, RefreshCcw } from "lucide-react";
 
 const StatusDot = ({ status }) => {
