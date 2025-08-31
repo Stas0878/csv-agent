@@ -180,6 +180,7 @@ function App() {
 
         {/* Main */}
         <div className="flex-1 flex flex-col">
+          <Tabs value={tab} onValueChange={setTab}>
           <Topbar
             t={t}
             theme={theme}
