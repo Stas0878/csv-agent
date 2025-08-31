@@ -202,6 +202,9 @@
       - working: true
         agent: "main"
         comment: "Cmd+K palette: navigate tabs, refresh, save preset to localStorage; toasts wired."
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED E2E: Command palette accessible via Cmd+K. Glow mode selector found with all three levels (Мягкое/Среднее/Яркое). History panel shows Load buttons when history entries exist. ErrorBoundary survivability confirmed - UI remains functional after simulated errors. Minor: Some glow selector interactions had locator conflicts but core functionality works."
 
 ## metadata:
   created_by: "main_agent"
