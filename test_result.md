@@ -188,6 +188,9 @@
       - working: true
         agent: "main"
         comment: "Append button and Auto mode now call POST /api/output/append with sessionId; SSE handled in App."
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED E2E: Terminal panel renders correctly with Russian UI. Auto-update toggle functional. Stream integration working with SSE connection. Debug break function (window.__mmxDebugBreak) available and functional for testing stream reconnection."
   - task: "Command palette + presets + toasts"
     implemented: true
     working: true
