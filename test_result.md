@@ -107,48 +107,60 @@
 ## backend:
   - task: "Hello and seed agents"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added GET /api/, GET /api/agents, POST /api/agents/init (seed on startup)."
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: GET /api/ returns Hello World message. GET /api/agents returns exactly 25 agents as expected. POST /api/agents/init is idempotent, returning same count (25) on multiple calls."
   - task: "Agent status refresh and toggle"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "POST /api/agents/refresh randomizes statuses; PATCH /api/agents/{id} updates enabled/status."
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: POST /api/agents/refresh successfully randomizes agent statuses. PATCH /api/agents/{id} correctly updates enabled field and returns updated agent data."
   - task: "Terminal append + SSE stream"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "POST /api/output/append saves Output and publishes via SessionHub; GET /api/stream?sessionId uses SSE. WS optional at /api/ws/{session_id}."
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: SSE streaming works correctly. Connected to GET /api/stream?sessionId=s_test, then POST /api/output/append delivered event with correct content and sessionId. Fixed JSON serialization issue with datetime objects in SSE payload."
   - task: "History CRUD"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "GET /api/history, POST /api/history implemented."
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED: History CRUD operations working correctly. POST /api/history creates entries with proper IDs and timestamps. GET /api/history returns list including newly created entries."
 
 ## frontend:
   - task: "UI shell with agents, terminal, history, admin, teal theme"
