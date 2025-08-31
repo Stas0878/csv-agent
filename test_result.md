@@ -174,6 +174,9 @@
       - working: true
         agent: "main"
         comment: "Functional mock replaced by API wiring (agents, history load; SSE subscribe)."
+      - working: true
+        agent: "testing"
+        comment: "✅ VERIFIED E2E: Russian language loads by default as expected. Tab navigation (Терминал/Админ/История) works correctly. Teal theme applied properly. Agent dashboard shows 25 agents with status indicators. Stream status indicator functional with live connection status."
   - task: "Terminal actions + SSE append integration"
     implemented: true
     working: true
