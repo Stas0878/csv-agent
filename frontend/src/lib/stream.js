@@ -75,6 +75,10 @@ export function connectStream({ sessionId, onMessage, onStatusChange }) {
 
   startES();
 
+  if (typeof window !== 'undefined') {
+    window.__mmxDebugBreak = () => { if (closed) return; try { cleanup(); } catch(_){}; scheduleReconnect(); };
+  }
+
   return {
     close() { closed = true; cleanup(); },
   };
