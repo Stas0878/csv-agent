@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Switch } from "./ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
-import { Separator } from "../components/ui/separator";
+import { Separator } from "./ui/separator";
 import { toast } from "../hooks/use-toast";
 import { Copy, Download, Save, Share2, Trash2, Play } from "lucide-react";
 import { mockAppendChunk, STORAGE_KEYS, saveToStorage, loadFromStorage } from "../mock/mock";
