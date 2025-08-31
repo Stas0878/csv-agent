@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,7 +6,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Set
+from typing import List, Optional, Dict, Set, Any
 import uuid
 from datetime import datetime, timedelta
 import asyncio
@@ -19,14 +19,10 @@ load_dotenv(ROOT_DIR / '.env')
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
-# DB name must exist in env. Keep as-is per environment; fallback to 'appdb' in dev
 _db_name = os.environ.get('DB_NAME', 'appdb')
 db = client[_db_name]
 
-# Create the main app without a prefix
 app = FastAPI()
-
-# Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
 # ---------------------------------------
@@ -66,6 +62,17 @@ class HistoryCreate(BaseModel):
   agentId: Optional[str] = None
   content: str
 
+# Client logs
+class ClientLogItem(BaseModel):
+  level: Optional[str] = Field(default="error")
+  message: str
+  stack: Optional[str] = None
+  meta: Optional[Dict[str, Any]] = None
+  ts: Optional[float] = None  # epoch ms from client
+
+class ClientLogBatch(BaseModel):
+  entries: List[ClientLogItem]
+
 # ---------------------------------------
 # Utilities / Seed
 # ---------------------------------------
@@ -82,7 +89,7 @@ async def ensure_agents_seed():
         "name": f"Agent-{str(i+1).zfill(2)}",
         "status": STATUSES[i % len(STATUSES)],
         "enabled": True,
-        "ai": i < 4,  # первые 4 — AI
+        "ai": i < 4,
         "updatedAt": datetime.utcnow(),
       })
     if docs:
@@ -102,14 +109,12 @@ class SessionHub:
     self.lock = asyncio.Lock()
 
   async def publish(self, session_id: str, payload: dict):
-    # SSE
     queues = list(self.sse_subs.get(session_id, set()))
     for q in queues:
       try:
         q.put_nowait(payload)
       except Exception:
         pass
-    # WS
     conns = list(self.ws_subs.get(session_id, set()))
     for ws in conns:
       try:
@@ -174,7 +179,6 @@ async def patch_agent(agent_id: str, body: AgentUpdate):
 
 @api_router.post("/agents/refresh")
 async def refresh_agents():
-  # Randomize statuses for demo purposes
   agents = await db.agents.find().to_list(100)
   for ag in agents:
     ag["status"] = STATUSES[uuid.uuid4().int % len(STATUSES)]
@@ -186,9 +190,7 @@ async def refresh_agents():
 @api_router.get("/metrics")
 async def metrics():
   total = await db.agents.count_documents({})
-  pipeline = [
-    {"$group": {"_id": "$status", "count": {"$sum": 1}}}
-  ]
+  pipeline = [{"$group": {"_id": "$status", "count": {"$sum": 1}}}]
   by_status = {"online": 0, "broken": 0, "idle": 0}
   async for row in db.agents.aggregate(pipeline):
     by_status[row["_id"]] = row["count"]
@@ -202,7 +204,6 @@ async def metrics():
 async def append_output(body: OutputCreate):
   out = Output(**body.dict())
   await db.outputs.insert_one(out.dict())
-  # Convert datetime to ISO string for JSON serialization
   out_dict = out.dict()
   out_dict["createdAt"] = out_dict["createdAt"].isoformat()
   payload = {"type": "output", "data": out_dict}
@@ -211,7 +212,6 @@ async def append_output(body: OutputCreate):
 
 @api_router.get("/stream")
 async def stream(sessionId: str):
-  # Server-Sent Events stream
   async def event_gen():
     q = await hub.subscribe_sse(sessionId)
     try:
@@ -222,17 +222,15 @@ async def stream(sessionId: str):
       pass
     finally:
       await hub.unsubscribe_sse(sessionId, q)
-
   return StreamingResponse(event_gen(), media_type="text/event-stream")
 
-# WebSocket (optional)
+# WebSocket
 @api_router.websocket("/ws/{session_id}")
 async def ws_endpoint(websocket: WebSocket, session_id: str):
   await websocket.accept()
   await hub.register_ws(session_id, websocket)
   try:
     while True:
-      # Echo ping/pong or ignore messages from client
       _ = await websocket.receive_text()
   except WebSocketDisconnect:
     pass
@@ -251,7 +249,29 @@ async def create_history(body: HistoryCreate):
   await db.history.insert_one(h.dict())
   return h
 
-# Legacy sample endpoints kept
+# Client Logs
+@api_router.post("/logs")
+async def ingest_logs(batch: ClientLogBatch, request: Request):
+  if not batch.entries:
+    return {"accepted": 0}
+  ua = request.headers.get('user-agent', '')
+  docs = []
+  now = datetime.utcnow()
+  for item in batch.entries:
+    docs.append({
+      "id": str(uuid.uuid4()),
+      "level": (item.level or "error")[:16],
+      "message": item.message[:5000],
+      "stack": (item.stack or "")[:10000],
+      "meta": item.meta or {},
+      "ua": ua,
+      "clientTs": item.ts,
+      "createdAt": now,
+    })
+  await db.client_logs.insert_many(docs)
+  return {"accepted": len(docs)}
+
+# Legacy sample
 class StatusCheck(BaseModel):
   id: str = Field(default_factory=lambda: str(uuid.uuid4()))
   client_name: str
@@ -271,7 +291,6 @@ async def get_status_checks():
   status_checks = await db.status_checks.find().to_list(1000)
   return [StatusCheck(**status_check) for status_check in status_checks]
 
-# Include the router in the main app
 app.include_router(api_router)
 
 app.add_middleware(
@@ -282,7 +301,6 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
-# Configure logging
 logging.basicConfig(
   level=logging.INFO,
   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'

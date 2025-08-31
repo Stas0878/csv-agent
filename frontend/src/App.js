@@ -21,6 +21,7 @@ import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, C
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
 import { connectStream } from "./lib/stream";
+import { AgentsSchema, HistorySchema } from "./lib/schema";
 
 function useTheme() {
   const [theme, setTheme] = useState(loadFromStorage(STORAGE_KEYS.theme, "dark"));
@@ -208,15 +209,24 @@ function App() {
 
   const [history, setHistory] = useState([]);
 
-  // Load agents + history
+  // Load agents + history with Zod validation
   useEffect(() => {
     (async () => {
-      try { const a = await getAgents(); Array.isArray(a) && setAgents(a); } catch (e) { toast({ title: "Agents", description: "Failed to load" }); }
-      try { const h = await getHistory(); Array.isArray(h) && setHistory(h); } catch (e) {}
+      try {
+        const a = await getAgents();
+        const safe = AgentsSchema.safeParse(a);
+        if (safe.success) setAgents(safe.data);
+        else toast({ title: "Agents", description: "Invalid data" });
+      } catch (e) { toast({ title: "Agents", description: "Failed to load" }); }
+      try {
+        const h = await getHistory();
+        const safeH = HistorySchema.safeParse(h);
+        if (safeH.success) setHistory(safeH.data);
+        else toast({ title: "History", description: "Invalid data" });
+      } catch (e) {}
     })();
   }, []);
 
-  // Streaming with retry & status
   const [connStatus, setConnStatus] = useState('connecting');
   useEffect(() => {
     const conn = connectStream({
@@ -237,13 +247,17 @@ function App() {
     return () => conn.close();
   }, [sessionId]);
 
-  // Debounced refresh
   const refreshing = useRef(false);
   const handleRefreshStatuses = async () => {
     if (refreshing.current) return;
     refreshing.current = true;
-    try { await refreshAgents(); const a = await getAgents(); Array.isArray(a) && setAgents(a); toast({ title: t.refresh, description: "OK" }); }
-    catch (e) { toast({ title: t.refresh, description: "Failed" }); }
+    try {
+      await refreshAgents();
+      const a = await getAgents();
+      const safe = AgentsSchema.safeParse(a);
+      if (safe.success) setAgents(safe.data);
+      toast({ title: t.refresh, description: "OK" });
+    } catch (e) { toast({ title: t.refresh, description: "Failed" }); }
     finally { setTimeout(() => { refreshing.current = false; }, 600); }
   };
 
