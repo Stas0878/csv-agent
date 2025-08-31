@@ -16,7 +16,6 @@ import json
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 _db_name = os.environ.get('DB_NAME', 'appdb')
@@ -25,9 +24,6 @@ db = client[_db_name]
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
-# ---------------------------------------
-# Models
-# ---------------------------------------
 class Agent(BaseModel):
   id: str
   name: str
@@ -62,20 +58,16 @@ class HistoryCreate(BaseModel):
   agentId: Optional[str] = None
   content: str
 
-# Client logs
 class ClientLogItem(BaseModel):
   level: Optional[str] = Field(default="error")
   message: str
   stack: Optional[str] = None
   meta: Optional[Dict[str, Any]] = None
-  ts: Optional[float] = None  # epoch ms from client
+  ts: Optional[float] = None
 
 class ClientLogBatch(BaseModel):
   entries: List[ClientLogItem]
 
-# ---------------------------------------
-# Utilities / Seed
-# ---------------------------------------
 STATUSES = ["online", "broken", "idle"]
 
 async def ensure_agents_seed():
@@ -99,9 +91,6 @@ async def ensure_agents_seed():
 async def on_startup():
   await ensure_agents_seed()
 
-# ---------------------------------------
-# Broadcaster for SSE / WS
-# ---------------------------------------
 class SessionHub:
   def __init__(self):
     self.sse_subs: Dict[str, Set[asyncio.Queue]] = {}
@@ -148,14 +137,10 @@ class SessionHub:
 
 hub = SessionHub()
 
-# ---------------------------------------
-# Routes
-# ---------------------------------------
 @api_router.get("/")
 async def root():
   return {"message": "Hello World"}
 
-# Agents
 @api_router.get("/agents", response_model=List[Agent])
 async def get_agents():
   await ensure_agents_seed()
@@ -186,7 +171,6 @@ async def refresh_agents():
     await db.agents.update_one({"id": ag["id"]}, {"$set": {"status": ag["status"], "updatedAt": ag["updatedAt"]}})
   return {"ok": True}
 
-# Metrics
 @api_router.get("/metrics")
 async def metrics():
   total = await db.agents.count_documents({})
@@ -199,13 +183,11 @@ async def metrics():
   outputs24 = await db.outputs.count_documents({"createdAt": {"$gte": since}})
   return {"agents": total, "enabled": enabled, "status": by_status, "outputs24h": outputs24}
 
-# Output Append + Stream
 @api_router.post("/output/append", response_model=Output)
 async def append_output(body: OutputCreate):
   out = Output(**body.dict())
   await db.outputs.insert_one(out.dict())
-  out_dict = out.dict()
-  out_dict["createdAt"] = out_dict["createdAt"].isoformat()
+  out_dict = out.dict(); out_dict["createdAt"] = out_dict["createdAt"].isoformat()
   payload = {"type": "output", "data": out_dict}
   await hub.publish(out.sessionId, payload)
   return out
@@ -224,7 +206,6 @@ async def stream(sessionId: str):
       await hub.unsubscribe_sse(sessionId, q)
   return StreamingResponse(event_gen(), media_type="text/event-stream")
 
-# WebSocket
 @api_router.websocket("/ws/{session_id}")
 async def ws_endpoint(websocket: WebSocket, session_id: str):
   await websocket.accept()
@@ -237,7 +218,6 @@ async def ws_endpoint(websocket: WebSocket, session_id: str):
   finally:
     await hub.unregister_ws(session_id, websocket)
 
-# History
 @api_router.get("/history", response_model=List[History])
 async def get_history(limit: int = 100):
   docs = await db.history.find().sort("createdAt", -1).limit(min(limit, 200)).to_list(1000)
@@ -249,7 +229,6 @@ async def create_history(body: HistoryCreate):
   await db.history.insert_one(h.dict())
   return h
 
-# Client Logs
 @api_router.post("/logs")
 async def ingest_logs(batch: ClientLogBatch, request: Request):
   if not batch.entries:
@@ -271,25 +250,20 @@ async def ingest_logs(batch: ClientLogBatch, request: Request):
   await db.client_logs.insert_many(docs)
   return {"accepted": len(docs)}
 
-# Legacy sample
-class StatusCheck(BaseModel):
-  id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-  client_name: str
-  timestamp: datetime = Field(default_factory=datetime.utcnow)
-
-class StatusCheckCreate(BaseModel):
-  client_name: str
-
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-  status_obj = StatusCheck(**input.dict())
-  _ = await db.status_checks.insert_one(status_obj.dict())
-  return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-  status_checks = await db.status_checks.find().to_list(1000)
-  return [StatusCheck(**status_check) for status_check in status_checks]
+@api_router.get("/logs")
+async def get_logs(level: Optional[str] = None, q: Optional[str] = None, limit: int = 100):
+  query: Dict[str, Any] = {}
+  if level in {"error", "warn", "info"}:
+    query["level"] = level
+  if q:
+    query["message"] = {"$regex": q, "$options": "i"}
+  cur = db.client_logs.find(query).sort("createdAt", -1).limit(min(limit, 300))
+  items = []
+  async for d in cur:
+    d["id"] = d.get("id", str(d.get("_id")))
+    d.pop("_id", None)
+    items.append(d)
+  return items
 
 app.include_router(api_router)
 
@@ -301,10 +275,7 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
-logging.basicConfig(
-  level=logging.INFO,
-  format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
