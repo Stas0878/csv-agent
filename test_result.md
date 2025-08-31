@@ -101,3 +101,106 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+## user_problem_statement: "Build extended MegaMind_X Front+Back: Agents, Terminal streaming (SSE/WS), History, Teal theme, command palette, toasts, presets; FastAPI+Mongo backend; Streamlit fallback later."
+
+## backend:
+  - task: "Hello and seed agents"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added GET /api/, GET /api/agents, POST /api/agents/init (seed on startup)."
+  - task: "Agent status refresh and toggle"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST /api/agents/refresh randomizes statuses; PATCH /api/agents/{id} updates enabled/status."
+  - task: "Terminal append + SSE stream"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "POST /api/output/append saves Output and publishes via SessionHub; GET /api/stream?sessionId uses SSE. WS optional at /api/ws/{session_id}."
+  - task: "History CRUD"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GET /api/history, POST /api/history implemented."
+
+## frontend:
+  - task: "UI shell with agents, terminal, history, admin, teal theme"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Functional mock replaced by API wiring (agents, history load; SSE subscribe)."
+  - task: "Terminal actions + SSE append integration"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/TerminalPanel.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Append button and Auto mode now call POST /api/output/append with sessionId; SSE handled in App."
+  - task: "Command palette + presets + toasts"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Cmd+K palette: navigate tabs, refresh, save preset to localStorage; toasts wired."
+
+## metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+## test_plan:
+  current_focus:
+    - "Hello and seed agents"
+    - "Agent status refresh and toggle"
+    - "Terminal append + SSE stream"
+    - "History CRUD"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "high_first"
+
+## agent_communication:
+  - agent: "main"
+    message: "Please verify backend endpoints, including SSE by connecting to /api/stream?sessionId=s_test, then POST /api/output/append to ensure event arrives. Test agents list/count (25), refresh, and patch. Also test history create/get."
