@@ -250,6 +250,7 @@ function App() {
               )}
             </Tabs>
           </div>
+          </Tabs>
         </div>
       </div>
       <Toaster />
