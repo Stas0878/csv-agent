@@ -1,0 +1,127 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - complementary [ref=e6]:
+        - generic "MegaMind_X" [ref=e9]:
+          - img [ref=e10]
+          - generic [ref=e13]:
+            - generic [ref=e14]: Mega
+            - generic [ref=e15]: Mind
+            - generic [ref=e16]: _X
+        - button "Agent-01" [ref=e18] [cursor=pointer]:
+          - generic [ref=e21] [cursor=pointer]: Agent-01
+          - img
+        - button "Обновить статусы" [ref=e23] [cursor=pointer]:
+          - img
+          - text: Обновить статусы
+        - generic [ref=e24]:
+          - generic [ref=e25]: • Выбрать агента
+          - generic [ref=e26]: • Обновить статусы
+        - generic [ref=e27]: v0.2 UI
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - generic [ref=e31]:
+            - generic "MegaMind_X" [ref=e33]:
+              - img [ref=e34]
+              - generic [ref=e37]:
+                - generic [ref=e38]: Mega
+                - generic [ref=e39]: Mind
+                - generic [ref=e40]: _X
+            - tablist [ref=e41]:
+              - tab "Терминал" [selected] [ref=e42] [cursor=pointer]
+              - tab "Админ" [ref=e43] [cursor=pointer]
+              - tab "История" [ref=e44] [cursor=pointer]
+            - generic [ref=e45]:
+              - generic [ref=e46]: Панели
+              - generic [ref=e47]:
+                - generic [ref=e48]: Терминал
+                - switch [checked] [ref=e49] [cursor=pointer]
+                - generic [ref=e50]: Админ
+                - switch [checked] [ref=e51] [cursor=pointer]
+                - generic [ref=e52]: История
+                - switch [checked] [ref=e53] [cursor=pointer]
+          - generic [ref=e54]:
+            - generic [ref=e55]:
+              - generic [ref=e56]: Свечение логотипа
+              - combobox [ref=e57] [cursor=pointer]:
+                - generic: Яркое
+                - img [ref=e58] [cursor=pointer]
+            - img [ref=e62]
+            - button "Command" [ref=e68] [cursor=pointer]:
+              - img
+            - generic [ref=e69]:
+              - generic [ref=e70]:
+                - img [ref=e71]
+                - generic [ref=e74]: Уровень доступа
+              - slider [ref=e80]
+            - button "Toggle theme" [ref=e81] [cursor=pointer]:
+              - img
+            - button "Toggle language" [ref=e82] [cursor=pointer]:
+              - img
+        - tabpanel "Терминал" [ref=e85]:
+          - generic [ref=e86]:
+            - generic [ref=e88]:
+              - generic [ref=e89]:
+                - generic [ref=e90]: Agents
+                - img [ref=e91]
+              - generic [ref=e94]: "25"
+            - generic [ref=e96]:
+              - generic [ref=e97]:
+                - generic [ref=e98]: Online
+                - img [ref=e99]
+              - generic [ref=e102]: "7"
+            - generic [ref=e104]:
+              - generic [ref=e105]:
+                - generic [ref=e106]: Idle
+                - img [ref=e107]
+              - generic [ref=e111]: "9"
+            - generic [ref=e113]:
+              - generic [ref=e114]:
+                - generic [ref=e115]: Enabled
+                - img [ref=e116]
+              - generic [ref=e122]: "22"
+            - generic [ref=e124]:
+              - generic [ref=e125]:
+                - generic [ref=e126]: Outputs 24h
+                - img [ref=e127]
+              - generic [ref=e129]: "2"
+          - generic [ref=e131]:
+            - generic [ref=e133]:
+              - generic [ref=e134]: Терминал
+              - generic [ref=e136]:
+                - text: Автообновление
+                - switch "Автообновление" [ref=e137] [cursor=pointer]
+            - generic [ref=e138]:
+              - textbox "# Output from agents appears here..." [ref=e140]
+              - generic [ref=e141]:
+                - generic [ref=e142]:
+                  - button "Копировать" [ref=e143] [cursor=pointer]:
+                    - img
+                    - text: Копировать
+                  - button "Скачать" [ref=e144] [cursor=pointer]:
+                    - img
+                    - text: Скачать
+                  - button "Сохранить" [ref=e145] [cursor=pointer]:
+                    - img
+                    - text: Сохранить
+                  - button "Поделиться" [ref=e146] [cursor=pointer]:
+                    - img
+                    - text: Поделиться
+                - generic [ref=e147]:
+                  - button "Добавлено" [ref=e148] [cursor=pointer]:
+                    - img
+                    - text: Добавлено
+                  - button "Очистить" [ref=e149] [cursor=pointer]:
+                    - img
+                    - text: Очистить
+    - region "Notifications (F8)":
+      - list
+  - link "Made with Emergent" [ref=e150] [cursor=pointer]:
+    - /url: https://app.emergent.sh/?utm_source=emergent-badge
+    - generic [ref=e151] [cursor=pointer]:
+      - img [ref=e152] [cursor=pointer]
+      - paragraph [ref=e153] [cursor=pointer]: Made with Emergent
+```
