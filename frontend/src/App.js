@@ -100,6 +100,61 @@ function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, 
   );
 }
 
+
+function AdminPanel({ t, adminLevel }) {
+  const disabled = adminLevel < 50;
+  const FeatureRow = ({ icon: Icon, label }) => (
+    <div className="flex items-center justify-between py-2">
+      <div className="flex items-center gap-2 text-sm">
+        <Icon className="w-4 h-4 text-cyan-500" />
+        <span>{label}</span>
+      </div>
+      <Switch disabled={disabled} />
+    </div>
+  );
+  return (
+    <Card className="bg-card/70">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base">{t.features} • <span className="text-xs text-muted-foreground">{t.adminOnly}</span></CardTitle>
+      </CardHeader>
+      <Separator />
+      <CardContent className="pt-3">
+        <FeatureRow icon={Settings2} label={t.manageAgents} />
+        <FeatureRow icon={Database} label={t.clearCache} />
+        <FeatureRow icon={ShieldCheck} label={t.forceRestart} />
+        {disabled && (
+          <p className="text-xs text-muted-foreground mt-3">{t.adminOnly}: 50+</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function HistoryPanel({ t, onLoad, history }) {
+  if (!history.length) return <div className="text-sm text-muted-foreground">{t.noHistory}</div>;
+  return (
+    <ScrollArea className="h-[600px] pr-2">
+      <div className="space-y-2">
+        {history.map(item => (
+          <Card key={item.id} className="hover:bg-accent/50 transition-colors">
+            <CardHeader className="py-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm">{new Date(item.createdAt).toLocaleString()}</CardTitle>
+                <Button size="sm" variant="outline" onClick={() => onLoad?.(item)}>
+                  Load
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <pre className="text-xs text-muted-foreground whitespace-pre-wrap line-clamp-3">{item.content}</pre>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </ScrollArea>
+  );
+}
+
 function App() {
   // language (default RU)
   const [lang, setLang] = useState(loadFromStorage(STORAGE_KEYS.lang, LANG.RU));
