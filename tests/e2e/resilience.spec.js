@@ -13,8 +13,8 @@ test('Graceful fallback on corrupted /history JSON', async ({ page }) => {
     });
   });
   await page.goto('/');
-  // App should still render top-level UI
-  await expect(page.getByText('Терминал')).toBeVisible();
+  // App should still render top-level UI - use more specific selector
+  await expect(page.getByRole('tab', { name: 'Терминал' }).first()).toBeVisible();
   // Optionally check that a toast or any UI message appears (best-effort)
   // We avoid strict matching to prevent flakiness
 });

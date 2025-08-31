@@ -17,9 +17,10 @@ async function switchGlow(page, label) {
 test.describe('MegaMind_X UI smoke', () => {
   test('navigate tabs and history load', async ({ page }) => {
     await page.goto('/');
-    await page.getByText('Терминал', { exact: true }).click();
-    await page.getByText('Админ', { exact: true }).click();
-    await page.getByText('История', { exact: true }).click();
+    // Use more specific tab selectors
+    await page.getByRole('tab', { name: 'Терминал' }).first().click();
+    await page.getByRole('tab', { name: 'Админ' }).first().click();
+    await page.getByRole('tab', { name: 'История' }).first().click();
     // If history has items, try the first Load button
     const loadBtn = page.getByRole('button', { name: 'Load' }).first();
     if (await loadBtn.count()) {
