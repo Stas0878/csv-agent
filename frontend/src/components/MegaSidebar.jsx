@@ -5,6 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Switch } from "./ui/switch";
 import { Badge } from "./ui/badge";
 import { ChevronDown, RefreshCcw } from "lucide-react";
+import BrandLogo from "./BrandLogo";
 
 const StatusDot = ({ status }) => {
   const color = status === "online" ? "bg-emerald-500" : status === "broken" ? "bg-rose-500" : "bg-zinc-400";
@@ -15,12 +16,9 @@ export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent,
   const selected = agents.find(a => a.id === selectedAgentId) || agents[0];
 
   return (
-    <aside className="h-full w-full sm:w-72 border-r border-border bg-card/60 backdrop-blur-sm flex flex-col">
+    <aside className="h-full w-full sm:w-72 bg-card/60 backdrop-blur-sm flex flex-col">
       <div className="px-4 py-4 border-b border-border flex items-center justify-end">
-        <div className="text-xl font-extrabold tracking-tight select-none skew-x-6 origin-right">
-          <span className="text-cyan-500">MegaMind</span>
-          <span className="text-foreground">_X</span>
-        </div>
+        <BrandLogo />
       </div>
 
       <div className="px-3 py-3">
@@ -34,7 +32,7 @@ export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent,
               <ChevronDown className="w-4 h-4 opacity-70" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-64">
+          <DropdownMenuContent align="start" className="w-72">
             <DropdownMenuLabel className="flex items-center justify-between">
               <span>{t.agents}</span>
               <Button size="sm" variant="ghost" onClick={onRefresh}>
@@ -48,6 +46,7 @@ export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent,
                   <div className="flex items-center min-w-0">
                     <StatusDot status={ag.status} />
                     <span className="truncate">{ag.name}</span>
+                    {ag.ai && <Badge className="ml-2" variant="secondary">AI</Badge>}
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="capitalize hidden sm:inline">{ag.status}</Badge>
@@ -72,7 +71,7 @@ export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent,
       </div>
 
       <div className="mt-auto p-3 border-t border-border text-xs text-muted-foreground">
-        v0.1 mock UI
+        v0.2 UI
       </div>
     </aside>
   );

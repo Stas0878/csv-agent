@@ -3,6 +3,7 @@ import "./App.css";
 import "./index.css";
 import MegaSidebar from "./components/MegaSidebar";
 import TerminalPanel from "./components/TerminalPanel";
+import Dashboard from "./components/Dashboard";
 import { tDict, LANG, STORAGE_KEYS, loadFromStorage, saveToStorage } from "./mock/mock";
 import { Button } from "./components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
@@ -13,7 +14,7 @@ import { Separator } from "./components/ui/separator";
 import { ScrollArea } from "./components/ui/scroll-area";
 import { toast } from "./hooks/use-toast";
 import { Toaster } from "./components/ui/toaster";
-import { Moon, Globe2, ShieldCheck, Database, Settings2, Command } from "lucide-react";
+import { Moon, Sun, Globe2, ShieldCheck, Database, Settings2, Command } from "lucide-react";
 import { getAgents, refreshAgents, patchAgent, getHistory, createHistory, sseUrl } from "./lib/api";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./components/ui/command";
 
@@ -38,13 +39,13 @@ function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, 
           <TabsTrigger value="history">{t.history}</TabsTrigger>
         </TabsList>
         <div className="hidden md:flex items-center gap-3 pl-3 ml-1 border-l border-border">
-          <span className="text-xs text-muted-foreground">{t.panels}</span>
+          <span className="text-xs text-muted-foreground">Панели</span>
           <div className="flex items-center gap-2 text-xs">
-            <span>{t.enableTerminal}</span>
+            <span>Терминал</span>
             <Switch checked={panels.terminal} onCheckedChange={(v) => setPanels(p => ({ ...p, terminal: v }))} />
-            <span>{t.enableAdmin}</span>
+            <span>Админ</span>
             <Switch checked={panels.admin} onCheckedChange={(v) => setPanels(p => ({ ...p, admin: v }))} />
-            <span>{t.enableHistory}</span>
+            <span>История</span>
             <Switch checked={panels.history} onCheckedChange={(v) => setPanels(p => ({ ...p, history: v }))} />
           </div>
         </div>
@@ -63,7 +64,7 @@ function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, 
           </div>
         </div>
         <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Toggle theme">
-          <Moon className="w-5 h-5" />
+          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </Button>
         <Button variant="ghost" size="icon" onClick={() => setLang(lang === LANG.RU ? LANG.EN : LANG.RU)} aria-label="Toggle language">
           <Globe2 className="w-5 h-5" />
@@ -128,7 +129,7 @@ function HistoryPanel({ t, onLoad, history }) {
 }
 
 function App() {
-  // language
+  // language (default RU)
   const [lang, setLang] = useState(loadFromStorage(STORAGE_KEYS.lang, LANG.RU));
   const t = useMemo(() => tDict[lang], [lang]);
 
@@ -187,7 +188,8 @@ function App() {
     })();
   }, []);
 
-  // SSE subscribe to outputs
+  // SSE subscribe to outputs with WS fallback
+  const wsRef = useRef(null);
   useEffect(() => {
     const url = sseUrl("/stream", { sessionId });
     const es = new EventSource(url);
@@ -206,9 +208,37 @@ function App() {
       } catch (e) {}
     };
     es.onerror = () => {
-      // silently ignore SSE errors; frontend still works
+      // Try WS fallback once
+      if (!wsRef.current) {
+        try {
+          const base = process.env.REACT_APP_BACKEND_URL || "";
+          const wsUrl = base.replace(/^http/, "ws") + `/api/ws/${sessionId}`;
+          const ws = new WebSocket(wsUrl);
+          wsRef.current = ws;
+          ws.onmessage = (ev) => {
+            try {
+              const payload = JSON.parse(ev.data);
+              if (payload?.type === "output" && payload.data?.content) {
+                const line = payload.data.content;
+                const ta = document.querySelector("textarea");
+                if (ta) {
+                  const next = (ta.value ? ta.value + "\n" : "") + line;
+                  ta.value = next;
+                  saveToStorage(STORAGE_KEYS.terminal, next);
+                }
+              }
+            } catch {}
+          };
+        } catch {}
+      }
     };
-    return () => es.close();
+    return () => {
+      es.close();
+      if (wsRef.current) {
+        try { wsRef.current.close(); } catch {}
+        wsRef.current = null;
+      }
+    };
   }, [sessionId]);
 
   const handleRefreshStatuses = async () => {
@@ -249,30 +279,19 @@ function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  // Logo animation classes
-  const logoCls = "text-xl md:text-2xl font-extrabold tracking-tight select-none skew-x-6 origin-right transition-transform hover:scale-[1.03] hover:drop-shadow-[0_0_10px_hsla(190,90%,50%,0.35)]";
-
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-background to-background/60 text-foreground">
       <div className="flex h-[100dvh]">
         {/* Sidebar */}
         <div className="hidden sm:block w-72">
-          <aside className="h-full w-full border-r border-border bg-card/60 backdrop-blur-sm flex flex-col">
-            <div className="px-4 py-4 border-b border-border flex items-center justify-end">
-              <div className={logoCls}>
-                <span className="text-cyan-500">MegaMind</span>
-                <span className="text-foreground">_X</span>
-              </div>
-            </div>
-            <MegaSidebar
-              t={t}
-              agents={agents}
-              selectedAgentId={selectedAgentId}
-              onSelectAgent={setSelectedAgentId}
-              onToggleAgent={handleToggleAgent}
-              onRefresh={handleRefreshStatuses}
-            />
-          </aside>
+          <MegaSidebar
+            t={t}
+            agents={agents}
+            selectedAgentId={selectedAgentId}
+            onSelectAgent={setSelectedAgentId}
+            onToggleAgent={handleToggleAgent}
+            onRefresh={handleRefreshStatuses}
+          />
         </div>
 
         {/* Main */}
@@ -301,37 +320,43 @@ function App() {
 
                 {panels.terminal && (
                   <TabsContent value="terminal" className="m-0">
+                    <Dashboard />
+                    <div className="h-3" />
                     <TerminalPanel t={t} selectedAgentId={selectedAgentId} lang={lang} sessionId={sessionId} onSaved={handleSaveHistory} />
                   </TabsContent>
                 )}
 
                 {panels.admin && (
                   <TabsContent value="admin" className="m-0">
-                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-                      <div className="xl:col-span-2">
-                        <AdminPanel t={t} adminLevel={adminLevel} />
-                      </div>
-                      <div className="xl:col-span-1">
-                        <Card className="bg-card/70">
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-base">{t.agents}</CardTitle>
-                          </CardHeader>
-                          <Separator />
-                          <CardContent className="pt-3">
-                            <ScrollArea className="h-[520px] pr-2">
-                              {agents.map(a => (
-                                <div key={a.id} className="flex items-center justify-between py-2 border-b last:border-b-0">
-                                  <div className="text-sm flex items-center gap-2">
-                                    <span className={`inline-block w-2.5 h-2.5 rounded-full ${a.status === 'online' ? 'bg-emerald-500' : a.status === 'broken' ? 'bg-rose-500' : 'bg-zinc-400'}`}></span>
-                                    <span className="font-medium">{a.name}</span>
-                                    <span className="text-xs text-muted-foreground capitalize">{a.status}</span>
+                    <div className="space-y-4">
+                      <Dashboard />
+                      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+                        <div className="xl:col-span-2">
+                          <AdminPanel t={t} adminLevel={adminLevel} />
+                        </div>
+                        <div className="xl:col-span-1">
+                          <Card className="bg-card/70">
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-base">{t.agents}</CardTitle>
+                            </CardHeader>
+                            <Separator />
+                            <CardContent className="pt-3">
+                              <ScrollArea className="h-[520px] pr-2">
+                                {agents.map(a => (
+                                  <div key={a.id} className="flex items-center justify-between py-2 border-b last:border-b-0">
+                                    <div className="text-sm flex items-center gap-2">
+                                      <span className={`inline-block w-2.5 h-2.5 rounded-full ${a.status === 'online' ? 'bg-emerald-500' : a.status === 'broken' ? 'bg-rose-500' : 'bg-zinc-400'}`}></span>
+                                      <span className="font-medium">{a.name}</span>
+                                      {a.ai && <span className="text-[10px] px-1 py-0.5 rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">AI</span>}
+                                      <span className="text-xs text-muted-foreground capitalize">{a.status}</span>
+                                    </div>
+                                    <Switch checked={a.enabled} onCheckedChange={(v) => handleToggleAgent(a.id, v)} />
                                   </div>
-                                  <Switch checked={a.enabled} onCheckedChange={(v) => handleToggleAgent(a.id, v)} />
-                                </div>
-                              ))}
-                            </ScrollArea>
-                          </CardContent>
-                        </Card>
+                                ))}
+                              </ScrollArea>
+                            </CardContent>
+                          </Card>
+                        </div>
                       </div>
                     </div>
                   </TabsContent>
