@@ -4,26 +4,29 @@ import React from "react";
   BrandLogo: Original mark for MegaMind_X
   - Left skew (skew-x-6)
   - Faster entrance animation (mmxFadeIn ~520ms)
-  - Brighter teal glow on hover (#22d3ee)
+  - Teal glow on hover (#22d3ee), adjustable via glowStrong
 */
-export default function BrandLogo({ className = "", size = 22, label = "MegaMind_X" }) {
+export default function BrandLogo({ className = "", size = 22, label = "MegaMind_X", glowStrong = false }) {
+  const strong = glowStrong;
+  const svgGlowClass = strong
+    ? "group-hover:drop-shadow-[0_0_18px_rgba(34,211,238,0.70)] group-hover:scale-[1.06]"
+    : "group-hover:drop-shadow-[0_0_12px_rgba(34,211,238,0.40)] group-hover:scale-[1.04]";
+
   return (
     <div
       className={`group inline-flex items-center select-none -skew-x-6 ${className}`}
       aria-label={label}
-      style={{
-        animation: "mmxFadeIn 520ms ease-out both",
-      }}
+      style={{ animation: "mmxFadeIn 520ms ease-out both" }}
     >
       <svg
         width={size}
         height={size}
         viewBox="0 0 24 24"
-        className="mr-2 drop-shadow-[0_0_0_rgba(0,0,0,0)] group-hover:drop-shadow-[0_0_16px_rgba(34,211,238,0.55)] transition-[filter,transform] duration-300 group-hover:scale-[1.05]"
+        className={`mr-2 transition-[filter,transform] duration-300 ${svgGlowClass}`}
         aria-hidden
       >
         {/* Cyan spark */}
-        <path d="M12 2 L15 9 L22 12 L15 15 L12 22 L9 15 L2 12 L9 9 Z" fill="#22d3ee" opacity="0.9" />
+        <path d="M12 2 L15 9 L22 12 L15 15 L12 22 L9 15 L2 12 L9 9 Z" fill="#22d3ee" opacity="0.92" />
         {/* Inner cutout */}
         <circle cx="12" cy="12" r="4.2" fill="currentColor" opacity="0.18" />
       </svg>

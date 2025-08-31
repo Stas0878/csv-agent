@@ -46,6 +46,7 @@ export const tDict = {
     loadedFromHistory: "Загружено из истории",
     nothingToShare: "Нечего отправлять",
     noHistory: "История пуста",
+    logoGlow: "Свечение логотипа",
   },
   en: {
     appName: "MegaMind_X",
@@ -81,6 +82,7 @@ export const tDict = {
     loadedFromHistory: "Loaded from history",
     nothingToShare: "Nothing to share",
     noHistory: "No history",
+    logoGlow: "Logo glow",
   },
 };
 
@@ -120,6 +122,7 @@ export const STORAGE_KEYS = {
   history: "mmx_history",
   panels: "mmx_panels",
   adminLevel: "mmx_admin_level",
+  logoGlow: "mmx_logo_glow",
 };
 
 export function loadFromStorage(key, fallback) {

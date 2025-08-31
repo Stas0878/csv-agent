@@ -12,13 +12,13 @@ const StatusDot = ({ status }) => {
   return <span className={`inline-block w-2.5 h-2.5 rounded-full ${color} mr-2`} />;
 };
 
-export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent, onToggleAgent, onRefresh }) {
+export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent, onToggleAgent, onRefresh, glowStrong = false }) {
   const selected = agents.find(a => a.id === selectedAgentId) || agents[0];
 
   return (
     <aside className="h-full w-full sm:w-72 bg-card/60 backdrop-blur-sm flex flex-col">
       <div className="px-4 py-4 border-b border-border flex items-center justify-end">
-        <BrandLogo />
+        <BrandLogo glowStrong={glowStrong} />
       </div>
 
       <div className="px-3 py-3">

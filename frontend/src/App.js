@@ -30,11 +30,11 @@ function useTheme() {
   return { theme, setTheme };
 }
 
-function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, panels, setPanels, onOpenCmd }) {
+function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, panels, setPanels, onOpenCmd, glowStrong, setGlowStrong }) {
   return (
     <div className="h-14 border-b border-border flex items-center justify-between px-3 md:px-4 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50">
       <div className="flex items-center gap-2 md:gap-3">
-        <BrandLogo className="hidden md:inline-flex mr-2" size={18} />
+        <BrandLogo className="hidden md:inline-flex mr-2" size={18} glowStrong={glowStrong} />
         <TabsList className="hidden md:flex">
           <TabsTrigger value="terminal">{t.terminal}</TabsTrigger>
           <TabsTrigger value="admin">{t.admin}</TabsTrigger>
@@ -53,6 +53,10 @@ function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, 
         </div>
       </div>
       <div className="flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2 pr-3 mr-1 border-r border-border text-xs text-muted-foreground">
+          <span>{t.logoGlow}</span>
+          <Switch checked={glowStrong} onCheckedChange={(v) => setGlowStrong(v)} />
+        </div>
         <Button variant="ghost" size="icon" onClick={onOpenCmd} aria-label="Command">
           <Command className="w-5 h-5" />
         </Button>
@@ -76,39 +80,6 @@ function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, 
   );
 }
 
-function AdminPanel({ t, adminLevel }) {
-  const disabled = adminLevel < 50;
-  const FeatureRow = ({ icon: Icon, label }) => (
-    <div className="flex items-center justify-between py-2">
-      <div className="flex items-center gap-2 text-sm">
-        <Icon className="w-4 h-4 text-cyan-500" />
-        <span>{label}</span>
-      </div>
-      <Switch disabled={disabled} />
-    </div>
-  );
-  return (
-    <Card className="bg-card/70">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{t.features} • <span className="text-xs text-muted-foreground">{t.adminOnly}</span></CardTitle>
-      </CardHeader>
-      <Separator />
-      <CardContent className="pt-3">
-        {/* ... unchanged ... */}
-      </CardContent>
-    </Card>
-  );
-}
-
-function HistoryPanel({ t, onLoad, history }) {
-  if (!history.length) return <div className="text-sm text-muted-foreground">{t.noHistory}</div>;
-  return (
-    <ScrollArea className="h-[600px] pr-2">
-      {/* ... unchanged ... */}
-    </ScrollArea>
-  );
-}
-
 function App() {
   // language (default RU)
   const [lang, setLang] = useState(loadFromStorage(STORAGE_KEYS.lang, LANG.RU));
@@ -120,6 +91,10 @@ function App() {
   // admin
   const [adminLevel, setAdminLevel] = useState(loadFromStorage(STORAGE_KEYS.adminLevel, 40));
   useEffect(() => { saveToStorage(STORAGE_KEYS.adminLevel, adminLevel); }, [adminLevel]);
+
+  // logo glow strong
+  const [glowStrong, setGlowStrong] = useState(loadFromStorage(STORAGE_KEYS.logoGlow, true));
+  useEffect(() => { saveToStorage(STORAGE_KEYS.logoGlow, glowStrong); }, [glowStrong]);
 
   // session id for streaming
   const [sessionId] = useState(() => {
@@ -154,16 +129,8 @@ function App() {
   // Load agents + history on mount
   useEffect(() => {
     (async () => {
-      try {
-        const a = await getAgents();
-        setAgents(a);
-      } catch (e) {
-        toast({ title: "Agents", description: "Failed to load" });
-      }
-      try {
-        const h = await getHistory();
-        setHistory(h);
-      } catch (e) {}
+      try { const a = await getAgents(); setAgents(a); } catch (e) { toast({ title: "Agents", description: "Failed to load" }); }
+      try { const h = await getHistory(); setHistory(h); } catch (e) {}
     })();
   }, []);
 
@@ -210,44 +177,28 @@ function App() {
         } catch {}
       }
     };
-    return () => {
-      es.close();
-      if (wsRef.current) { try { wsRef.current.close(); } catch {} wsRef.current = null; }
-    };
+    return () => { es.close(); if (wsRef.current) { try { wsRef.current.close(); } catch {} wsRef.current = null; } };
   }, [sessionId]);
 
   const handleRefreshStatuses = async () => {
-    try {
-      await refreshAgents();
-      const a = await getAgents();
-      setAgents(a);
-      toast({ title: t.refresh, description: "OK" });
-    } catch (e) {
-      toast({ title: t.refresh, description: "Failed" });
-    }
+    try { await refreshAgents(); const a = await getAgents(); setAgents(a); toast({ title: t.refresh, description: "OK" }); }
+    catch (e) { toast({ title: t.refresh, description: "Failed" }); }
   };
 
   const handleToggleAgent = async (id, value) => {
-    try {
-      await patchAgent(id, { enabled: value });
-      setAgents(prev => prev.map(a => (a.id === id ? { ...a, enabled: value } : a)));
-    } catch (e) {}
+    try { await patchAgent(id, { enabled: value }); setAgents(prev => prev.map(a => (a.id === id ? { ...a, enabled: value } : a))); }
+    catch (e) {}
   };
 
   const handleSaveHistory = async (content) => {
-    try {
-      const item = await createHistory({ agentId: selectedAgentId, content });
-      setHistory(prev => [item, ...prev].slice(0, 100));
-    } catch (e) {}
+    try { const item = await createHistory({ agentId: selectedAgentId, content }); setHistory(prev => [item, ...prev].slice(0, 100)); }
+    catch (e) {}
   };
 
   const [openCmd, setOpenCmd] = useState(false);
   useEffect(() => {
-    const onKey = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setOpenCmd(v => !v); }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const onKey = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setOpenCmd(v => !v); } };
+    window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   return (
@@ -261,6 +212,7 @@ function App() {
             onSelectAgent={setSelectedAgentId}
             onToggleAgent={handleToggleAgent}
             onRefresh={handleRefreshStatuses}
+            glowStrong={glowStrong}
           />
         </div>
         <div className="flex-1 flex flex-col">
@@ -276,6 +228,8 @@ function App() {
               panels={panels}
               setPanels={setPanels}
               onOpenCmd={() => setOpenCmd(true)}
+              glowStrong={glowStrong}
+              setGlowStrong={setGlowStrong}
             />
 
             <div className="flex-1 p-3 md:p-4">
@@ -302,11 +256,7 @@ function App() {
 
                 {panels.history && (
                   <TabsContent value="history" className="m-0">
-                    <HistoryPanel t={t} history={history} onLoad={(item) => {
-                      saveToStorage(STORAGE_KEYS.terminal, item.content);
-                      toast({ title: t.history, description: t.loadedFromHistory });
-                      setTab("terminal");
-                    }} />
+                    <HistoryPanel t={t} history={history} onLoad={(item) => { saveToStorage(STORAGE_KEYS.terminal, item.content); toast({ title: t.history, description: t.loadedFromHistory }); setTab("terminal"); }} />
                   </TabsContent>
                 )}
               </Tabs>
