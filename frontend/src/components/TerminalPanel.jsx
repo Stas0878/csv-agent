@@ -7,9 +7,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/t
 import { Separator } from "./ui/separator";
 import { toast } from "../hooks/use-toast";
 import { Copy, Download, Save, Share2, Trash2, Play } from "lucide-react";
-import { mockAppendChunk, STORAGE_KEYS, saveToStorage, loadFromStorage } from "../mock/mock";
+import { STORAGE_KEYS, saveToStorage, loadFromStorage, mockAppendChunk } from "../mock/mock";
+import { appendOutput } from "../lib/api";
 
-export default function TerminalPanel({ t, selectedAgentId, lang }) {
+export default function TerminalPanel({ t, selectedAgentId, lang, sessionId, onSaved }) {
   const [content, setContent] = useState(loadFromStorage(STORAGE_KEYS.terminal, ""));
   const [auto, setAuto] = useState(false);
   const timerRef = useRef(null);
@@ -18,16 +19,22 @@ export default function TerminalPanel({ t, selectedAgentId, lang }) {
     saveToStorage(STORAGE_KEYS.terminal, content);
   }, [content]);
 
+  // Auto-post mock chunks to backend so SSE consumers receive data
   useEffect(() => {
     if (auto) {
-      timerRef.current = setInterval(() => {
-        setContent(prev => (prev ? prev + "\n" : "") + mockAppendChunk(selectedAgentId));
+      timerRef.current = setInterval(async () => {
+        try {
+          const chunk = mockAppendChunk(selectedAgentId);
+          await appendOutput({ sessionId, agentId: selectedAgentId, content: chunk });
+        } catch (e) {
+          // ignore network errors for now
+        }
       }, 4000);
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [auto, selectedAgentId]);
+  }, [auto, selectedAgentId, sessionId]);
 
   const handleCopy = async () => {
     try {
@@ -46,12 +53,12 @@ export default function TerminalPanel({ t, selectedAgentId, lang }) {
     URL.revokeObjectURL(url);
   };
 
-  const handleSaveHistory = () => {
-    const history = loadFromStorage(STORAGE_KEYS.history, []);
-    const entry = { id: `h_${Date.now()}`, at: Date.now(), content, agent: selectedAgentId };
-    const next = [entry, ...history].slice(0, 100);
-    saveToStorage(STORAGE_KEYS.history, next);
-    toast({ title: t.save, description: t.savedToHistory });
+  const handleSaveHistory = async () => {
+    try {
+      // consumed in parent via onSaved -> saves through API there
+      onSaved?.(content);
+      toast({ title: t.save, description: t.savedToHistory });
+    } catch (e) {}
   };
 
   const handleShare = async () => {
@@ -114,7 +121,10 @@ export default function TerminalPanel({ t, selectedAgentId, lang }) {
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => setContent(prev => (prev ? prev + "\n" : "") + mockAppendChunk(selectedAgentId))}>
+            <Button size="sm" variant="outline" onClick={async () => {
+              const chunk = mockAppendChunk(selectedAgentId);
+              await appendOutput({ sessionId, agentId: selectedAgentId, content: chunk });
+            }}>
               <Play className="w-4 h-4 mr-2" /> {t.appended}
             </Button>
             <Button size="sm" variant="destructive" onClick={() => setContent("") }>
