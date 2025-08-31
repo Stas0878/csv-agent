@@ -15,11 +15,12 @@ import { Separator } from "./components/ui/separator";
 import { ScrollArea } from "./components/ui/scroll-area";
 import { toast } from "./hooks/use-toast";
 import { Toaster } from "./components/ui/toaster";
-import { Moon, Sun, Globe2, ShieldCheck, Database, Settings2, Command } from "lucide-react";
-import { getAgents, refreshAgents, patchAgent, getHistory, createHistory, sseUrl } from "./lib/api";
+import { Moon, Sun, Globe2, ShieldCheck, Database, Settings2, Command, Radio } from "lucide-react";
+import { getAgents, refreshAgents, patchAgent, getHistory, createHistory } from "./lib/api";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./components/ui/command";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/ui/tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
+import { connectStream } from "./lib/stream";
 
 function useTheme() {
   const [theme, setTheme] = useState(loadFromStorage(STORAGE_KEYS.theme, "dark"));
@@ -32,7 +33,9 @@ function useTheme() {
   return { theme, setTheme };
 }
 
-function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, panels, setPanels, onOpenCmd, glowMode, setGlowMode }) {
+function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, panels, setPanels, onOpenCmd, glowMode, setGlowMode, connStatus }) {
+  const dot = connStatus === 'live' ? 'bg-emerald-500' : connStatus === 'reconnecting' ? 'bg-amber-500' : connStatus === 'connecting' ? 'bg-cyan-500' : 'bg-rose-500';
+  const statusText = connStatus === 'live' ? 'Live' : connStatus === 'reconnecting' ? 'Reconnecting' : connStatus === 'connecting' ? 'Connecting' : 'Offline';
   return (
     <div className="h-14 border-b border-border flex items-center justify-between px-3 md:px-4 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50">
       <div className="flex items-center gap-2 md:gap-3">
@@ -77,6 +80,17 @@ function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, 
             </SelectContent>
           </Select>
         </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1 px-2 py-1 rounded border border-border">
+                <span className={`inline-block w-2.5 h-2.5 rounded-full ${dot}`} />
+                <Radio className="w-4 h-4 opacity-70" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>Stream: {statusText}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <Button variant="ghost" size="icon" onClick={onOpenCmd} aria-label="Command">
           <Command className="w-5 h-5" />
         </Button>
@@ -99,7 +113,6 @@ function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, 
     </div>
   );
 }
-
 
 function AdminPanel({ t, adminLevel }) {
   const disabled = adminLevel < 50;
@@ -156,18 +169,12 @@ function HistoryPanel({ t, onLoad, history }) {
 }
 
 function App() {
-  // language (default RU)
   const [lang, setLang] = useState(loadFromStorage(STORAGE_KEYS.lang, LANG.RU));
   const t = useMemo(() => tDict[lang], [lang]);
-
-  // theme
   const { theme, setTheme } = useTheme();
-
-  // admin
   const [adminLevel, setAdminLevel] = useState(loadFromStorage(STORAGE_KEYS.adminLevel, 40));
   useEffect(() => { saveToStorage(STORAGE_KEYS.adminLevel, adminLevel); }, [adminLevel]);
 
-  // logo glow mode (migrate from old boolean if needed)
   const [glowMode, setGlowMode] = useState(() => {
     const v = loadFromStorage(STORAGE_KEYS.logoGlow, "strong");
     if (typeof v === "boolean") return v ? "strong" : "soft";
@@ -176,7 +183,6 @@ function App() {
   });
   useEffect(() => { saveToStorage(STORAGE_KEYS.logoGlow, glowMode); }, [glowMode]);
 
-  // session id for streaming
   const [sessionId] = useState(() => {
     const existing = loadFromStorage("mmx_session", "");
     if (existing) return existing;
@@ -185,16 +191,13 @@ function App() {
     return sid;
   });
 
-  // agents
   const [agents, setAgents] = useState([]);
   const [selectedAgentId, setSelectedAgentId] = useState(loadFromStorage(STORAGE_KEYS.selectedAgent, "agent-01"));
   useEffect(() => { saveToStorage(STORAGE_KEYS.selectedAgent, selectedAgentId); }, [selectedAgentId]);
 
-  // panels toggle
   const [panels, setPanels] = useState(loadFromStorage(STORAGE_KEYS.panels, { terminal: true, admin: true, history: true }));
   useEffect(() => { saveToStorage(STORAGE_KEYS.panels, panels); }, [panels]);
 
-  // tabs
   const [tab, setTab] = useState(panels.terminal ? "terminal" : panels.admin ? "admin" : "history");
   useEffect(() => {
     if (!panels[tab]) {
@@ -203,66 +206,45 @@ function App() {
     }
   }, [panels, tab]);
 
-  // history
   const [history, setHistory] = useState([]);
 
-  // Load agents + history on mount
+  // Load agents + history
   useEffect(() => {
     (async () => {
-      try { const a = await getAgents(); setAgents(a); } catch (e) { toast({ title: "Agents", description: "Failed to load" }); }
-      try { const h = await getHistory(); setHistory(h); } catch (e) {}
+      try { const a = await getAgents(); Array.isArray(a) && setAgents(a); } catch (e) { toast({ title: "Agents", description: "Failed to load" }); }
+      try { const h = await getHistory(); Array.isArray(h) && setHistory(h); } catch (e) {}
     })();
   }, []);
 
-  // SSE subscribe to outputs with WS fallback (unchanged)
-  const wsRef = useRef(null);
+  // Streaming with retry & status
+  const [connStatus, setConnStatus] = useState('connecting');
   useEffect(() => {
-    const url = sseUrl("/stream", { sessionId });
-    const es = new EventSource(url);
-    es.onmessage = (ev) => {
-      try {
-        const payload = JSON.parse(ev.data);
-        if (payload?.type === "output" && payload.data?.content) {
+    const conn = connectStream({
+      sessionId,
+      onMessage: (payload) => {
+        if (payload?.type === 'output' && payload.data?.content) {
           const line = payload.data.content;
-          const ta = document.querySelector("textarea");
+          const ta = document.querySelector('textarea');
           if (ta) {
             const next = (ta.value ? ta.value + "\n" : "") + line;
             ta.value = next;
             saveToStorage(STORAGE_KEYS.terminal, next);
           }
         }
-      } catch (e) {}
-    };
-    es.onerror = () => {
-      if (!wsRef.current) {
-        try {
-          const base = process.env.REACT_APP_BACKEND_URL || "";
-          const wsUrl = base.replace(/^http/, "ws") + `/api/ws/${sessionId}`;
-          const ws = new WebSocket(wsUrl);
-          wsRef.current = ws;
-          ws.onmessage = (ev) => {
-            try {
-              const payload = JSON.parse(ev.data);
-              if (payload?.type === "output" && payload.data?.content) {
-                const line = payload.data.content;
-                const ta = document.querySelector("textarea");
-                if (ta) {
-                  const next = (ta.value ? ta.value + "\n" : "") + line;
-                  ta.value = next;
-                  saveToStorage(STORAGE_KEYS.terminal, next);
-                }
-              }
-            } catch {}
-          };
-        } catch {}
-      }
-    };
-    return () => { es.close(); if (wsRef.current) { try { wsRef.current.close(); } catch {} wsRef.current = null; } };
+      },
+      onStatusChange: setConnStatus,
+    });
+    return () => conn.close();
   }, [sessionId]);
 
+  // Debounced refresh
+  const refreshing = useRef(false);
   const handleRefreshStatuses = async () => {
-    try { await refreshAgents(); const a = await getAgents(); setAgents(a); toast({ title: t.refresh, description: "OK" }); }
+    if (refreshing.current) return;
+    refreshing.current = true;
+    try { await refreshAgents(); const a = await getAgents(); Array.isArray(a) && setAgents(a); toast({ title: t.refresh, description: "OK" }); }
     catch (e) { toast({ title: t.refresh, description: "Failed" }); }
+    finally { setTimeout(() => { refreshing.current = false; }, 600); }
   };
 
   const handleToggleAgent = async (id, value) => {
@@ -310,6 +292,7 @@ function App() {
               onOpenCmd={() => setOpenCmd(true)}
               glowMode={glowMode}
               setGlowMode={(m) => setGlowMode(m)}
+              connStatus={connStatus}
             />
 
             <div className="flex-1 p-3 md:p-4">
