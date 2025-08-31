@@ -185,7 +185,10 @@ async def refresh_agents():
 async def append_output(body: OutputCreate):
     out = Output(**body.dict())
     await db.outputs.insert_one(out.dict())
-    payload = {"type": "output", "data": out.dict()}
+    # Convert datetime to ISO string for JSON serialization
+    out_dict = out.dict()
+    out_dict["createdAt"] = out_dict["createdAt"].isoformat()
+    payload = {"type": "output", "data": out_dict}
     await hub.publish(out.sessionId, payload)
     return out
 
