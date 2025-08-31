@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "./ui/button";
-import { ScrollArea } from "../components/ui/scroll-area";
+import { ScrollArea } from "./ui/scroll-area";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../components/ui/dropdown-menu";
 import { Switch } from "../components/ui/switch";
 import { Badge } from "../components/ui/badge";
