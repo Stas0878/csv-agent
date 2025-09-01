@@ -5,7 +5,7 @@ const { test, expect } = require('@playwright/test');
 test.describe('Embedded preview overlay', () => {
   const url = process.env.E2E_BASE_URL || 'http://localhost:3000';
 
-  test('Open overlay and see iframe with actions', async ({ page }) => {
+  test('Open overlay with animation, see minimal UI in embed, and mode persistence', async ({ page }) => {
     await page.setViewportSize({ width: 1366, height: 800 });
     await page.goto(url);
 
