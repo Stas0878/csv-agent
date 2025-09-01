@@ -78,6 +78,11 @@ function App() {
 
   const [leftOpen, setLeftOpen] = useState(loadFromStorage(STORAGE_KEYS.leftOpen, true));
   const [rightOpen, setRightOpen] = useState(loadFromStorage(STORAGE_KEYS.rightOpen, false));
+  // Apply admin collapses
+  useEffect(() => {
+    if (uiConfig.layout.leftCollapsed) setLeftOpen(false);
+    if (uiConfig.layout.rightCollapsed) setRightOpen(false);
+  }, [uiConfig.layout.leftCollapsed, uiConfig.layout.rightCollapsed]);
   useEffect(() => { saveToStorage(STORAGE_KEYS.leftOpen, leftOpen); }, [leftOpen]);
   useEffect(() => { saveToStorage(STORAGE_KEYS.rightOpen, rightOpen); }, [rightOpen]);
 
