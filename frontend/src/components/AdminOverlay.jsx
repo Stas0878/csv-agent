@@ -7,10 +7,7 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
 
   const apply = (type, next) => {
     const res = validateUIState(next);
-    if (!res.valid) {
-      setStatus({ color: 'red', errors: res.errors || [] });
-      return; // block
-    }
+    if (!res.valid) { setStatus({ color: 'red', errors: res.errors || [] }); return; }
     setStatus({ color: 'green', errors: [] });
     setConfig(next);
   };
