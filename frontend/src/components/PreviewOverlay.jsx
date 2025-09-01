@@ -4,7 +4,7 @@ import { Separator } from "./ui/separator";
 import { ExternalLink, RefreshCw, Share2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function PreviewOverlay({ t, open, onClose, src, onSetMode }) {
+export default function PreviewOverlay({ t, open, onClose, src, onSetMode, placement = 'center' }) {
   const [nonce, setNonce] = useState(0);
   const url = useMemo(() => {
     try {
@@ -19,7 +19,7 @@ export default function PreviewOverlay({ t, open, onClose, src, onSetMode }) {
 
   const handleRefresh = () => setNonce(Date.now());
   const handleShare = async () => {
-    const shareUrl = window.location.origin;
+    const shareUrl = window.location.href;
     try {
       if (navigator.share) {
         await navigator.share({ title: "MegaMind_X", url: shareUrl });
@@ -30,9 +30,15 @@ export default function PreviewOverlay({ t, open, onClose, src, onSetMode }) {
   };
   const handleOpenNew = () => {
     onSetMode?.("fullscreen");
-    window.open(window.location.origin, "_blank", "noopener,noreferrer");
+    const u = new URL(window.location.href);
+    u.searchParams.set('embed', '1');
+    window.open(u.toString(), "_blank", "noopener,noreferrer");
     onClose?.();
   };
+
+  const frameWrapperClass = placement === 'right'
+    ? 'ml-auto mr-2 md:mr-4 w-[92vw] md:w-[60vw]'
+    : 'm-2 md:m-4';
 
   return (
     <AnimatePresence>
@@ -49,12 +55,9 @@ export default function PreviewOverlay({ t, open, onClose, src, onSetMode }) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.24 }}
-            className="m-2 md:m-4 rounded-lg overflow-hidden border shadow-xl bg-card/90 backdrop-blur"
+            className={`${frameWrapperClass} rounded-lg overflow-hidden border shadow-xl bg-card/90 backdrop-blur`}
           >
             <div className="h-12 shrink-0 flex items-center justify-between px-3 border-b bg-card/80">
-            {/* Fallback hint if something blocks same-origin preview (CSP, router): */}
-            {/* <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground pointer-events-none">Если предпросмотр не отображается, откройте в новой вкладке.</div> */}
-
               <div className="text-sm font-medium">{t.preview}</div>
               <div className="flex items-center gap-2">
                 <Button size="sm" variant="secondary" onClick={handleOpenNew} aria-label="Open in new tab">
@@ -71,6 +74,8 @@ export default function PreviewOverlay({ t, open, onClose, src, onSetMode }) {
                 </Button>
               </div>
             </div>
+            {/* Fallback hint if something blocks same-origin preview (CSP, router): */}
+            {/* <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground pointer-events-none">Если предпросмотр не отображается, откройте в новой вкладке.</div> */}
             <div className="h-[calc(100vh-2rem-3rem)] md:h-[calc(100vh-2rem-3rem)]">
               <iframe title="Live Preview" src={url} className="w-full h-full border-0 bg-white rounded-b-lg" />
             </div>

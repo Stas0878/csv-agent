@@ -4,9 +4,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Slider } from "./ui/slider";
 import { Separator } from "./ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
-import { Moon, Sun, Globe2, Command, Radio, Eye } from "lucide-react";
+import { Moon, Sun, Globe2, Command, Radio, Eye, Settings } from "lucide-react";
 
-export default function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, panels, setPanels, onOpenCmd, glowMode, setGlowMode, connStatus, onOpenPreview, canOpenPreview = true }) {
+export default function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, panels, setPanels, onOpenCmd, glowMode, setGlowMode, connStatus, onOpenPreview, canOpenPreview = true, onOpenAdmin, customButtons = [] }) {
   const connColor = connStatus === 'open' ? 'bg-emerald-500' : connStatus === 'connecting' ? 'bg-amber-500' : 'bg-rose-500';
   return (
     <div className="sticky top-0 z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
@@ -16,6 +16,10 @@ export default function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, 
           <span className="text-xs text-muted-foreground hidden sm:inline">{t.stream}: {connStatus}</span>
         </div>
         <div className="flex items-center gap-2">
+          {customButtons.map(btn => (
+            <Button key={btn.id} size="sm" variant="outline">{btn.label}</Button>
+          ))}
+
           {canOpenPreview && (
             <TooltipProvider>
               <Tooltip>
@@ -28,6 +32,17 @@ export default function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, 
               </Tooltip>
             </TooltipProvider>
           )}
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="secondary" size="sm" onClick={onOpenAdmin} aria-label="Admin settings">
+                  <Settings className="w-4 h-4 mr-2" /> {t.admin}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t.adminSettings}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           <TooltipProvider>
             <Tooltip>
