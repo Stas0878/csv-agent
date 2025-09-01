@@ -299,8 +299,8 @@ function App() {
         </button>
       )}
 
-      {/* Embedded Preview Overlay */}
-      <PreviewOverlay t={t} open={previewOpen} onClose={() => setPreviewOpen(false)} src={`${window.location.origin}/?embed=1`} onSetMode={setPreviewMode} />
+      {/* Embedded Preview Overlay with placement from admin */}
+      <PreviewOverlay t={t} open={previewOpen} onClose={() => setPreviewOpen(false)} src={`${window.location.origin}/?embed=1`} onSetMode={setPreviewMode} placement={uiConfig.preview.placement} />
 
       <CommandDialog open={openCmd} onOpenChange={setOpenCmd}>
         <CommandInput placeholder="Type a command..." />
