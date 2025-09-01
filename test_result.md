@@ -229,7 +229,7 @@
 
 ## test_plan:
   current_focus:
-    - "Preview Overlay E2E"
+    - "ValidationEngine E2E"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
