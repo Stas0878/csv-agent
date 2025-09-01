@@ -162,6 +162,18 @@
         agent: "testing"
         comment: "✅ VERIFIED: History CRUD operations working correctly. POST /api/history creates entries with proper IDs and timestamps. GET /api/history returns list including newly created entries."
 
+  - task: "Responsive layout & overlays"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented full-height shell, fixed-width sidebars (256/224), sticky headers, internal scroll, InputComposer pinned bottom, auto-collapse to overlay ≤1024px with backdrop. Added ARIA and Playwright responsive.spec.js."
+
 ## frontend:
   - task: "UI shell with agents, terminal, history, admin, teal theme"
     implemented: true
