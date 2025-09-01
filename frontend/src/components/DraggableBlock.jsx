@@ -37,7 +37,7 @@ export default function DraggableBlock({ id, children, positions, updatePosition
   };
 
   return (
-    <div ref={drag} style={style}>
+    <div ref={drag} style={style} data-testid={testId || id}>
       {children}
     </div>
   );
