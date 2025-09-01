@@ -153,6 +153,28 @@ function App() {
 
   return (
     <DndProvider backend={HTML5Backend}>
+      {/* Edit mode: render draggable live panels overlay */}
+      {adminOpen && (
+        <>
+          {/* Draggable Left Sidebar */}
+          {leftOpen && (
+            <DraggableBlock id="live_left" positions={dragPositions} updatePosition={updateDragPos} testId="drag-left">
+              <div className="absolute">
+                <MegaSidebar t={t} agents={agents} selectedAgentId={selectedAgentId} onSelectAgent={setSelectedAgentId} onToggleAgent={handleToggleAgent} onRefresh={handleRefreshStatuses} glowMode={uiConfig.effects.glowMode} parallax={uiConfig.effects.parallax} onCollapse={() => setLeftOpen(false)} />
+              </div>
+            </DraggableBlock>
+          )}
+          {/* Draggable Right Sidebar */}
+          {rightOpen && (
+            <DraggableBlock id="live_right" positions={dragPositions} updatePosition={updateDragPos} testId="drag-right">
+              <div className="absolute">
+                <RightSidebar t={t} agents={agents} selectedAgentId={selectedAgentId} onSelectAgent={setSelectedAgentId} onToggleAgent={handleToggleAgent} onRefresh={handleRefreshStatuses} glowMode={uiConfig.effects.glowMode} parallax={uiConfig.effects.parallax} onCollapse={() => setRightOpen(false)} />
+              </div>
+            </DraggableBlock>
+          )}
+        </>
+      )}
+
     <div className={`w-screen h-screen overflow-hidden bg-gradient-to-b from-background to-background/60 text-foreground ${embedClass}`}>
       <div className="flex h-full">
         {/* Desktop left sidebar (supports swap) */}
