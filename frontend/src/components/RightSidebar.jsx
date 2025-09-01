@@ -12,7 +12,7 @@ const StatusDot = ({ status }) => {
   return <span className={`inline-block w-2.5 h-2.5 rounded-full ${color} mr-2`} />;
 };
 
-export default function RightSidebar({ t, agents, selectedAgentId, onSelectAgent, onToggleAgent, onRefresh, glowMode = "strong", onCollapse }) {
+export default function RightSidebar({ t, agents, selectedAgentId, onSelectAgent, onToggleAgent, onRefresh, glowMode = "strong", parallax = true, onCollapse }) {
   const selected = agents.find(a => a.id === selectedAgentId) || agents[0];
 
   return (
@@ -21,7 +21,7 @@ export default function RightSidebar({ t, agents, selectedAgentId, onSelectAgent
         <Button size="icon" variant="ghost" onClick={onCollapse} title="Collapse" aria-label="Collapse right sidebar" aria-expanded="true">
           <PanelRight className="w-4 h-4" />
         </Button>
-        <BrandLogo glowMode={glowMode} />
+        <BrandLogo glowMode={glowMode} parallax={parallax} />
       </div>
 
       <div className="px-3 py-3 min-h-0">

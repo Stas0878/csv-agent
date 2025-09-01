@@ -12,13 +12,13 @@ const StatusDot = ({ status }) => {
   return <span className={`inline-block w-2.5 h-2.5 rounded-full ${color} mr-2`} />;
 };
 
-export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent, onToggleAgent, onRefresh, glowMode = "strong", onCollapse }) {
+export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent, onToggleAgent, onRefresh, glowMode = "strong", parallax = true, onCollapse }) {
   const selected = agents.find(a => a.id === selectedAgentId) || agents[0];
 
   return (
     <aside className="h-full w-56 lg:w-64 min-w-[224px] lg:min-w-[256px] max-w-[320px] bg-card/60 backdrop-blur-sm flex flex-col" aria-label="Left sidebar">
       <div className="px-4 py-4 border-b border-border flex items-center justify-between sticky top-0 z-20 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-        <BrandLogo glowMode={glowMode} />
+        <BrandLogo glowMode={glowMode} parallax={parallax} />
         <Button size="icon" variant="ghost" onClick={onCollapse} title="Collapse" aria-label="Collapse left sidebar" aria-expanded="true">
           <PanelLeft className="w-4 h-4" />
         </Button>
