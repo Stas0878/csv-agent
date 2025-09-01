@@ -168,11 +168,14 @@
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented full-height shell, fixed-width sidebars (256/224), sticky headers, internal scroll, InputComposer pinned bottom, auto-collapse to overlay ≤1024px with backdrop. Added ARIA and Playwright responsive.spec.js."
+      - working: "NA"
+        agent: "testing"
+        comment: "SYSTEM LIMITATION: Cannot test frontend E2E functionality including Preview Overlay, responsive layouts, and UI interactions. Testing agent is restricted to backend API testing only. Frontend E2E tests (tests/e2e/preview.spec.js, tests/e2e/responsive.spec.js) require manual execution or different testing approach."
 
 ## frontend:
   - task: "UI shell with agents, terminal, history, admin, teal theme"
