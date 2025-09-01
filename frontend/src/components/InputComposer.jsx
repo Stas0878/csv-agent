@@ -144,7 +144,7 @@ export default function InputComposer({
           <input ref={inputRef} type="file" multiple className="hidden" onChange={onPickFiles} />
 
           {!listening ? (
-            <Button variant="outline" size="sm" onClick={startSpeech}>
+            <Button variant="outline" size="sm" onClick={features.voice ? startSpeech : undefined} disabled={!features.voice}>
               <Mic className="w-4 h-4 mr-2" /> {lang === 'ru' ? 'Голос (RU)' : 'Voice (EN)'}
             </Button>
           ) : (
