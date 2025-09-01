@@ -157,9 +157,11 @@ export default function InputComposer({
             <Send className="w-4 h-4 mr-2" /> Отправить
           </Button>
 
-          <div className="ml-auto text-xs text-muted-foreground">
-            {softMaxLength ? `${counter} / ${softMaxLength}` : `${counter} символов`}
-          </div>
+          {features.counter && (
+            <div className="ml-auto text-xs text-muted-foreground">
+              {softMaxLength ? `${counter} / ${softMaxLength}` : `${counter} символов`}
+            </div>
+          )}
         </div>
 
         {files.length > 0 && (
