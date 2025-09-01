@@ -453,28 +453,6 @@ function App() {
             <CommandItem onSelect={() => { saveToStorage('mmx_preset', loadFromStorage(STORAGE_KEYS.terminal, '')); toast({ title: 'Preset', description: 'Saved' }); setOpenCmd(false); }}>Save preset</CommandItem>
           </CommandGroup>
         </CommandList>
-      {adminOpen && (
-        <AdminOverlay onClose={() => setAdminOpen(false)} config={uiConfig} setConfig={setUiConfig} />
-      )}
-
-      {/* Draggable demo blocks (overlayed, admin only) */}
-      {adminOpen && (
-        <>
-          <DraggableBlock id="leftPanel" positions={dragPositions} updatePosition={updateDragPos}>
-            <div className="bg-card/70 border rounded p-3 w-64 h-40 shadow">Левая панель (demo)</div>
-          </DraggableBlock>
-          <DraggableBlock id="rightPanel" positions={dragPositions} updatePosition={updateDragPos}>
-            <div className="bg-card/70 border rounded p-3 w-64 h-40 shadow">Правая панель (demo)</div>
-          </DraggableBlock>
-          <DraggableBlock id="inputComposer" positions={dragPositions} updatePosition={updateDragPos}>
-            <div className="bg-card/70 border rounded p-3 w-96 shadow">Строка ввода (demo)</div>
-          </DraggableBlock>
-          <DraggableBlock id="previewOverlay" positions={dragPositions} updatePosition={updateDragPos}>
-            <div className="bg-card/70 border rounded p-3 w-96 h-56 shadow">Preview Overlay (demo)</div>
-          </DraggableBlock>
-        </>
-      )}
-
       </CommandDialog>
 
       <Toaster />
