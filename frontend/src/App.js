@@ -11,6 +11,7 @@ import ClientLogs from "./components/ClientLogs";
 import Topbar from "./components/Topbar";
 import AdminPanel from "./components/AdminPanel";
 import HistoryPanel from "./components/HistoryPanel";
+import PreviewOverlay from "./components/PreviewOverlay";
 import { tDict, LANG, STORAGE_KEYS, loadFromStorage, saveToStorage } from "./mock/mock";
 import { Button } from "./components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
@@ -103,6 +104,21 @@ function App() {
   const [openCmd, setOpenCmd] = useState(false);
   useEffect(() => { const onKey = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setOpenCmd(v => !v); } }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, []);
 
+  // Preview state & handlers
+  const isEmbedCtx = useMemo(() => new URLSearchParams(window.location.search).get('embed') === '1', []);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const previewMode = loadFromStorage(STORAGE_KEYS.previewMode, 'embedded');
+  const openPreview = () => {
+    if (previewMode === 'fullscreen') {
+      window.open(window.location.origin, '_blank', 'noopener,noreferrer');
+    } else {
+      setPreviewOpen(true);
+    }
+  };
+  const setPreviewMode = (mode) => {
+    saveToStorage(STORAGE_KEYS.previewMode, mode);
+  };
+
   return (
     <div className="w-screen h-screen overflow-hidden bg-gradient-to-b from-background to-background/60 text-foreground">
       <div className="flex h-full">
@@ -122,7 +138,7 @@ function App() {
 
         {/* Main content area: flex column, inner blocks scroll */}
         <div className="flex-1 min-w-0 min-h-0 flex flex-col">
-          <Topbar t={t} theme={theme} setTheme={setTheme} lang={lang} setLang={(l)=>{ setLang(l); saveToStorage(STORAGE_KEYS.lang, l); }} adminLevel={adminLevel} setAdminLevel={setAdminLevel} panels={panels} setPanels={setPanels} onOpenCmd={()=>setOpenCmd(true)} glowMode={glowMode} setGlowMode={setGlowMode} connStatus={connStatus} />
+          <Topbar t={t} theme={theme} setTheme={setTheme} lang={lang} setLang={(l)=>{ setLang(l); saveToStorage(STORAGE_KEYS.lang, l); }} adminLevel={adminLevel} setAdminLevel={setAdminLevel} panels={panels} setPanels={setPanels} onOpenCmd={()=>setOpenCmd(true)} glowMode={glowMode} setGlowMode={setGlowMode} connStatus={connStatus} onOpenPreview={openPreview} canOpenPreview={!isEmbedCtx} />
 
           {/* Content area fills remaining height and scrolls inside */}
           <div className="flex-1 min-h-0 overflow-hidden p-3 md:p-4">
@@ -242,6 +258,9 @@ function App() {
           <PanelRight className="w-4 h-4" />
         </button>
       )}
+
+      {/* Embedded Preview Overlay */}
+      <PreviewOverlay t={t} open={previewOpen} onClose={() => setPreviewOpen(false)} src={`${window.location.origin}/?embed=1`} onSetMode={setPreviewMode} />
 
       <CommandDialog open={openCmd} onOpenChange={setOpenCmd}>
         <CommandInput placeholder="Type a command..." />

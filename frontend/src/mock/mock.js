@@ -50,6 +50,11 @@ export const tDict = {
     glowMedium: "Среднее",
     glowStrong: "Яркое",
     logoTooltip: "MegaMind_X — AI Control Hub",
+    preview: "Предпросмотр",
+    openInNewTab: "Открыть в новой вкладке",
+    refreshPreview: "Обновить",
+    shareLink: "Поделиться ссылкой",
+    close: "Закрыть",
   },
   en: {
     appName: "MegaMind_X",
@@ -90,6 +95,11 @@ export const tDict = {
     glowMedium: "Medium",
     glowStrong: "Strong",
     logoTooltip: "MegaMind_X — AI Control Hub",
+    preview: "Preview",
+    openInNewTab: "Open in new tab",
+    refreshPreview: "Refresh",
+    shareLink: "Share link",
+    close: "Close",
   },
 };
 
@@ -133,6 +143,7 @@ export const STORAGE_KEYS = {
   logoGlow: "mmx_logo_glow",
   leftOpen: "mmx_left_open",
   rightOpen: "mmx_right_open",
+  previewMode: "mmx_preview_mode", // 'embedded' | 'fullscreen'
 };
 
 export function loadFromStorage(key, fallback) {
