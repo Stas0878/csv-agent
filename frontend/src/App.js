@@ -333,7 +333,7 @@ function App() {
       {/* Draggable demo blocks (overlayed, admin only) */}
       {adminOpen && (
         <>
-          <DraggableBlock id="leftPanel" positions={dragPositions}>
+          <DraggableBlock id="leftPanel" positions={dragPositions} updatePosition={updateDragPos}>
             <div className="bg-card/70 border rounded p-3 w-64 h-40 shadow">Левая панель (demo)</div>
           </DraggableBlock>
           <DraggableBlock id="rightPanel" positions={dragPositions}>
