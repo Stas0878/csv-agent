@@ -428,16 +428,8 @@ function App() {
       )}
 
       {/* Embedded Preview Overlay with placement from admin */}
-      {!adminOpen && (
-        <PreviewOverlay t={t} open={previewOpen} onClose={() => setPreviewOpen(false)} src={`${window.location.origin}/?embed=1`} onSetMode={setPreviewMode} placement={uiConfig.preview.placement} />
-      )}
-      {adminOpen && (
-        <DraggableBlock id="live_preview" positions={dragPositions} updatePosition={updateDragPos} testId="drag-preview">
-          <div className="absolute">
-            <PreviewOverlay t={t} open={false} onClose={() => {}} src={`${window.location.origin}/?embed=1`} onSetMode={setPreviewMode} placement={uiConfig.preview.placement} editMode />
-          </div>
-        </DraggableBlock>
-      )}
+      {/* PreviewOverlay simplified: always overlay when open, no edit embedding */}
+      <PreviewOverlay t={t} open={previewOpen} onClose={() => setPreviewOpen(false)} onSetMode={setPreviewMode} placement={uiConfig.preview.placement} />
 
       <CommandDialog open={openCmd} onOpenChange={setOpenCmd}>
         <CommandInput placeholder="Type a command..." />
