@@ -16,7 +16,7 @@ export default function RightSidebar({ t, agents, selectedAgentId, onSelectAgent
   const selected = agents.find(a => a.id === selectedAgentId) || agents[0];
 
   return (
-    <aside className="h-full w-full sm:w-72 bg-card/60 backdrop-blur-sm flex flex-col border-l border-border">
+    <aside className="h-full w-72 min-w-[260px] max-w-[320px] bg-card/60 backdrop-blur-sm flex flex-col border-l border-border">
       <div className="px-4 py-4 border-b border-border flex items-center justify-between">
         <Button size="icon" variant="ghost" onClick={onCollapse} title="Collapse">
           <PanelRight className="w-4 h-4" />
@@ -24,7 +24,7 @@ export default function RightSidebar({ t, agents, selectedAgentId, onSelectAgent
         <BrandLogo glowMode={glowMode} />
       </div>
 
-      <div className="px-3 py-3">
+      <div className="px-3 py-3 min-h-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" className="w-full justify-between">
