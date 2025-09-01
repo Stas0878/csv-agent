@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { useDrag } from "react-dnd";
 
-export default function DraggableBlock({ id, children, positions, updatePosition, containerRef, onDragEnd }) {
+export default function DraggableBlock({ id, children, positions, updatePosition, containerRef, onDragEnd, testId }) {
   const startRef = useRef({ dx: 0, dy: 0 });
 
   const [{ isDragging }, drag] = useDrag({
