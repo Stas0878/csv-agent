@@ -230,6 +230,9 @@
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
+  - agent: "main"
+    message: "Frontend responsive refactor done. Please run only the new e2e/responsive.spec.js on multiple widths (1920, 1366, 1024, 768, 390). Verify: sidebars fixed widths on desktop, auto-collapse overlays under 1024px with dim backdrop, sticky headers in panels, InputComposer anchored at bottom, internal scrolling works. No backend tests needed."
+
 
 ## agent_communication:
   - agent: "main"
