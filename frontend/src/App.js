@@ -151,6 +151,7 @@ function App() {
   };
 
   return (
+    <DndProvider backend={HTML5Backend}>
     <div className={`w-screen h-screen overflow-hidden bg-gradient-to-b from-background to-background/60 text-foreground ${embedClass}`}>
       <div className="flex h-full">
         {/* Desktop left sidebar (supports swap) */}
