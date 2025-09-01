@@ -90,7 +90,7 @@ function App() {
       return normalized;
     } catch(e) { return defaultConfig; }
   };
-  const [uiConfig, setUiConfig] = useState(loadFromStorage(STORAGE_KEYS.uiConfig, defaultConfig));
+  const [uiConfig, setUiConfig] = useState(sanitizeConfig(loadFromStorage(STORAGE_KEYS.uiConfig, defaultConfig)));
   useEffect(() => { saveToStorage(STORAGE_KEYS.uiConfig, uiConfig); }, [uiConfig]);
 
   const [leftOpen, setLeftOpen] = useState(loadFromStorage(STORAGE_KEYS.leftOpen, true));
