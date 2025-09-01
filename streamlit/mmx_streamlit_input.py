@@ -1,7 +1,7 @@
 """
-MegaMind_X Streamlit adaptive text input with voice (RU/EN) + file attachments
+MegaMind_X Streamlit adaptive text input (NO hard char limit) with voice RU/EN + file attachments
 - Pure Streamlit + minimal JS (Web Speech API) and CSS
-- Drop-in to existing Streamlit projects (no React/Tailwind)
+- Drop-in for existing Streamlit apps (no React/Tailwind)
 
 Usage:
     import streamlit as st
@@ -10,11 +10,11 @@ Usage:
     res = render_mmx_text_input(
         key_prefix="mmx",
         label="Сообщение",
-        max_length=5000,
         languages=[("Русский", "ru-RU"), ("English", "en-US")],
         allowed_file_types=["txt", "pdf", "jpg", "jpeg", "png"],
         max_file_size=10*1024*1024,  # 10 MB
         max_width_cm=26.0,
+        soft_max_length=None,        # optional soft counter only
     )
     if res.submitted:
         st.success("Отправлено!")
@@ -24,11 +24,11 @@ Parameters:
 - key_prefix: str — префикс ключей session_state
 - label: str — заголовок поля
 - help_text: Optional[str]
-- max_length: int — лимит символов, по достижении — блокируем набор (можно удалять/редактировать)
-- languages: list[(label, locale)] — языки для Web Speech API, например [("Русский","ru-RU"),("English","en-US")]
-- allowed_file_types: list[str] — допустимые расширения файлов (без точки)
-- max_file_size: int — лимит размера одного файла в байтах (напр. 10 МБ)
-- max_width_cm: float — максимум ширины текстового поля; ширина = clamp(16.5см, 100%, max_width_cm)
+- languages: list[(label, locale)] — RU/EN и др. для Web Speech API
+- allowed_file_types: list[str] — допустимые расширения (без точки)
+- max_file_size: int — лимит размера одного файла (байт)
+- max_width_cm: float — максимум ширины поля (ширина = clamp(16.5см, 100%, max_width_cm))
+- soft_max_length: Optional[int] — показать «текущие/максимум» без жёсткого ограничения
 
 Returns SubmitResult(submitted, cleared, text, files, data)
 - files: список принятых файлов (dict: name, type, size, data)
@@ -36,7 +36,6 @@ Returns SubmitResult(submitted, cleared, text, files, data)
 """
 
 from __future__ import annotations
-import base64
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 import streamlit as st
@@ -65,7 +64,7 @@ def _file_ext_ok(name: str, allowed: List[str]) -> bool:
     return ext in {e.lower() for e in allowed}
 
 
-def _read_file_info(f) -> Tuple[str, str, int, bytes]:
+def _read_file_info(f):
     name = getattr(f, 'name', 'file')
     ftype = getattr(f, 'type', '') or ''
     try:
@@ -84,14 +83,14 @@ def render_mmx_text_input(
     key_prefix: str = "mmx",
     label: str = "Сообщение",
     help_text: Optional[str] = "Поддерживает голосовой ввод и автодобавление файлов.",
-    max_length: int = 5000,
     languages: List[Tuple[str, str]] = (("Русский", "ru-RU"), ("English", "en-US")),
     allowed_file_types: Optional[List[str]] = None,
     max_file_size: int = 10 * 1024 * 1024,
     max_width_cm: float = 26.0,
+    soft_max_length: Optional[int] = None,
 ) -> SubmitResult:
     """Рендерит адаптивное текстовое поле с голосовым вводом и загрузкой файлов.
-    См. параметры в верхнем docstring.
+    Без жёсткого лимита символов (soft_max_length — только индикатор).
     """
     _ensure_state(key_prefix)
 
@@ -140,7 +139,7 @@ def render_mmx_text_input(
             unsafe_allow_html=True,
         )
 
-        # Text area; enforce max_length also in JS to block beyond limit while allowing delete
+        # Text area
         text = st.text_area(
             label,
             key=f"{key_prefix}_text",
@@ -150,7 +149,7 @@ def render_mmx_text_input(
             help=help_text,
         )
 
-        # Controls: Mic + JS enhancer (auto-resize + max_length enforcement)
+        # Controls: Mic + JS enhancer (auto-resize)
         st.components.v1.html(
             f"""
             <div>
@@ -170,20 +169,8 @@ def render_mmx_text_input(
                 ta.addEventListener('input', autoresize);
                 window.setTimeout(autoresize, 50);
 
-                // Max length blocker
-                const MAXL = {max_length};
-                let prev = ta.value || '';
-                ta.addEventListener('input', () => {{
-                  if (ta.value.length > MAXL) {{
-                    // keep selection end while preventing growth
-                    const pos = ta.selectionStart - (ta.value.length - prev.length);
-                    ta.value = prev;
-                    if (pos >= 0) {{ ta.setSelectionRange(pos, pos); }}
-                  }} else {{ prev = ta.value; }}
-                }});
-
                 // Web Speech API
-                const chosenLang = {chosen_lang!r};
+                const chosenLang = {st.session_state.get(f"{key_prefix}_lang", 'ru-RU')!r};
                 let rec = null; let active = false;
                 const supported = ('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window);
                 if (!supported) {{
@@ -199,7 +186,7 @@ def render_mmx_text_input(
                     for (let i=evt.resultIndex; i<evt.results.length; i++) buf += evt.results[i][0].transcript;
                     if (buf) {{
                       const next = (ta.value ? ta.value + ' ' : '') + buf.trim();
-                      ta.value = next.slice(0, MAXL); // respect max
+                      ta.value = next; // NO hard limit
                       ta.dispatchEvent(new Event('input', {{ bubbles: true }}));
                       autoresize();
                     }}
@@ -250,7 +237,6 @@ def render_mmx_text_input(
             for idx, item in enumerate(list(files_list)):
                 c1, c2, c3 = st.columns([1, 5, 1])
                 with c1:
-                    # image preview if possible
                     is_img = (item.get('type','').startswith('image/')) or (item.get('name','').lower().split('.')[-1] in {"jpg","jpeg","png","gif"})
                     if is_img and item.get('data'):
                         try:
@@ -270,31 +256,37 @@ def render_mmx_text_input(
                         except Exception:
                             pass
 
-        # Char counter server-side (authoritative)
+        # Soft counter
         cnt = len(text or "")
-        over = cnt > max_length
-        st.markdown(
-            f"<div class='mmx-counter {'over' if over else ''}'>{cnt} / {max_length}</div>",
-            unsafe_allow_html=True,
-        )
+        if soft_max_length:
+            st.markdown(
+                f"<div class='mmx-counter {'over' if cnt > soft_max_length else ''}'>{cnt} / {soft_max_length}</div>",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f"<div class='mmx-counter'>{cnt} символов</div>",
+                unsafe_allow_html=True,
+            )
 
         c1, c2 = st.columns([1, 1])
         submitted = c1.form_submit_button("Отправить")
         cleared = c2.form_submit_button("Очистить")
 
     # After form
-    # Enforce max_length on server too
-    text = (text or "")[:max_length]
-
-    result = SubmitResult(submitted=False, cleared=False, text=text or "", files=st.session_state.get(f"{key_prefix}_files", []), data={})
+    result = SubmitResult(
+        submitted=False,
+        cleared=False,
+        text=text or "",
+        files=st.session_state.get(f"{key_prefix}_files", []),
+        data={},
+    )
 
     if submitted:
-        st.session_state[f"{key_prefix}_text"] = text
-        # keep only validated files as already stored
+        st.session_state[f"{key_prefix}_text"] = text or ""
         files_ok = st.session_state.get(f"{key_prefix}_files", [])
-        st.session_state[f"{key_prefix}_files"] = files_ok
         entry = {
-            "text": text,
+            "text": st.session_state[f"{key_prefix}_text"],
             "files": [f.get('name') for f in files_ok],
             "lang": st.session_state.get(f"{key_prefix}_lang", "ru-RU"),
         }
@@ -315,14 +307,14 @@ def render_mmx_text_input(
 if __name__ == "__main__":
     st.set_page_config(page_title="MMX Input Demo", page_icon="📝", layout="centered")
     st.title("MegaMind_X — Text Input Demo")
-    st.write("Ниже интерактивный ввод с авто‑ростом, голосом (RU/EN), лимитами и файлами.")
+    st.write("Ниже адаптивный ввод без жёсткого лимита, с голосом (RU/EN) и файлами.")
 
     res = render_mmx_text_input(
-        max_length=5000,
         languages=[("Русский","ru-RU"),("English","en-US")],
         allowed_file_types=["txt","pdf","jpg","jpeg","png"],
         max_file_size=10*1024*1024,
         max_width_cm=26.0,
+        soft_max_length=None,
     )
 
     if res.submitted:
