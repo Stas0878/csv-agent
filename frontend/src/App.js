@@ -65,6 +65,17 @@ function App() {
   useEffect(() => { if (!panels[tab]) { const next = panels.terminal ? "terminal" : panels.admin ? "admin" : "history"; setTab(next); } }, [panels, tab]);
   const [history, setHistory] = useState([]);
 
+  // Admin UI config (persisted)
+  const defaultConfig = {
+    layout: { swapSidebars: false, leftCollapsed: false, rightCollapsed: false, composerPosition: 'above' },
+    preview: { mode: loadFromStorage(STORAGE_KEYS.previewMode, 'embedded'), placement: 'center' },
+    effects: { glowMode, parallax: false, parallaxIntensity: 30, accentHue: 190 },
+    features: { voice: true, dragdrop: true, counter: true },
+    custom: { buttons: [] },
+  };
+  const [uiConfig, setUiConfig] = useState(loadFromStorage(STORAGE_KEYS.uiConfig, defaultConfig));
+  useEffect(() => { saveToStorage(STORAGE_KEYS.uiConfig, uiConfig); }, [uiConfig]);
+
   const [leftOpen, setLeftOpen] = useState(loadFromStorage(STORAGE_KEYS.leftOpen, true));
   const [rightOpen, setRightOpen] = useState(loadFromStorage(STORAGE_KEYS.rightOpen, false));
   useEffect(() => { saveToStorage(STORAGE_KEYS.leftOpen, leftOpen); }, [leftOpen]);
