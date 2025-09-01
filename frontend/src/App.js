@@ -350,6 +350,15 @@ function App() {
         </button>
       )}
 
+      {/* Admin Overlay */}
+      {adminOpen && (
+        <AdminOverlay 
+          onClose={() => setAdminOpen(false)} 
+          config={uiConfig} 
+          setConfig={setUiConfig} 
+        />
+      )}
+
       {/* Embedded Preview Overlay with placement from admin */}
       {/* PreviewOverlay simplified: always overlay when open, no edit embedding */}
       <PreviewOverlay t={t} open={previewOpen} onClose={() => setPreviewOpen(false)} onSetMode={setPreviewMode} placement={uiConfig.preview.placement} />
