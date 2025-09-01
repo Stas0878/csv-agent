@@ -76,6 +76,7 @@ function App() {
     preview: { mode: loadFromStorage(STORAGE_KEYS.previewMode, 'embedded'), placement: 'center' },
     effects: { glowMode, parallax: false, parallaxIntensity: 30, accentHue: 190 },
     features: { voice: true, dragdrop: true, counter: true },
+    tabs: { order: ['terminal','admin','history'], enabled: { terminal: true, admin: true, history: true } },
     custom: { buttons: [] },
   };
   const [uiConfig, setUiConfig] = useState(loadFromStorage(STORAGE_KEYS.uiConfig, defaultConfig));
