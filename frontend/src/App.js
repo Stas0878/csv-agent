@@ -130,7 +130,7 @@ function App() {
   const previewMode = loadFromStorage(STORAGE_KEYS.previewMode, 'embedded');
   const openPreview = () => {
     if (previewMode === 'fullscreen') {
-      const u = new URL(window.location.href);
+      const u = new URL(window.location.origin + window.location.pathname);
       u.searchParams.set('embed', '1');
       window.open(u.toString(), '_blank', 'noopener,noreferrer');
     } else {
