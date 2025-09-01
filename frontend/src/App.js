@@ -136,17 +136,17 @@ function App() {
               {panels.terminal && (
                 <TabsContent value="terminal" className="m-0 h-full">
                   <div className="h-full flex flex-col min-h-0">
-                    {/* Terminal scrolls above */}
-                    <div className="flex-1 min-h-0 overflow-auto mt-0">
-                      <TerminalPanel t={t} selectedAgentId={selectedAgentId} lang={lang} sessionId={sessionId} onSaved={handleSaveHistory} />
-                    </div>
-                    {/* Composer pinned at bottom */}
-                    <div className="pt-3">
+                    {/* Composer above terminal */}
+                    <div className="pb-3">
                       <InputComposer t={t} lang={lang} softMaxLength={5000} onSubmit={async ({text, files}) => {
                         await handleSaveHistory(text);
                         try { await appendOutput({ sessionId, agentId: selectedAgentId, content: `[input] ${text.slice(0,120)}` }); } catch(e){}
                         toast({ title: 'Sent', description: 'Сообщение отправлено' });
                       }} />
+                    </div>
+                    {/* Terminal fills remaining space */}
+                    <div className="flex-1 min-h-0 overflow-auto">
+                      <TerminalPanel t={t} selectedAgentId={selectedAgentId} lang={lang} sessionId={sessionId} onSaved={handleSaveHistory} />
                     </div>
                   </div>
                 </TabsContent>
