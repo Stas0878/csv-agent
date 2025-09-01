@@ -26,7 +26,151 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { connectStream } from "./lib/stream";
 import { AgentsSchema, HistorySchema } from "./lib/schema";
 
-/* useTheme, Topbar, AdminPanel, HistoryPanel definitions stay unchanged (omitted for brevity) */
+function useTheme() {
+  const [theme, setTheme] = useState(loadFromStorage(STORAGE_KEYS.theme, "dark"));
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") root.classList.add("dark");
+    else root.classList.remove("dark");
+    saveToStorage(STORAGE_KEYS.theme, theme);
+  }, [theme]);
+  return { theme, setTheme };
+}
+
+function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, panels, setPanels, onOpenCmd, glowMode, setGlowMode, connStatus }) {
+  const dot = connStatus === 'live' ? 'bg-emerald-500' : connStatus === 'reconnecting' ? 'bg-amber-500' : connStatus === 'connecting' ? 'bg-cyan-500' : 'bg-rose-500';
+  const statusText = connStatus === 'live' ? 'Live' : connStatus === 'reconnecting' ? 'Reconnecting' : connStatus === 'connecting' ? 'Connecting' : 'Offline';
+  return (
+    <div className="h-14 border-b border-border flex items-center justify-between px-3 md:px-4 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50">
+      <div className="flex items-center gap-2 md:gap-3">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <BrandLogo className="hidden md:inline-flex mr-2" size={18} glowMode={glowMode} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>{t.logoTooltip}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <TabsList className="hidden md:flex">
+          <TabsTrigger value="terminal">{t.terminal}</TabsTrigger>
+          <TabsTrigger value="admin">{t.admin}</TabsTrigger>
+          <TabsTrigger value="history">{t.history}</TabsTrigger>
+        </TabsList>
+        <div className="hidden md:flex items-center gap-3 pl-3 ml-1 border-l border-border">
+          <span className="text-xs text-muted-foreground">Панели</span>
+          <div className="flex items-center gap-2 text-xs">
+            <span>Терминал</span>
+            <Switch checked={panels.terminal} onCheckedChange={(v) => setPanels(p => ({ ...p, terminal: v }))} />
+            <span>Админ</span>
+            <Switch checked={panels.admin} onCheckedChange={(v) => setPanels(p => ({ ...p, admin: v }))} />
+            <span>История</span>
+            <Switch checked={panels.history} onCheckedChange={(v) => setPanels(p => ({ ...p, history: v }))} />
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2 pr-3 mr-1 border-r border-border text-xs text-muted-foreground">
+          <span>{t.logoGlow}</span>
+          <Select value={glowMode} onValueChange={(v) => setGlowMode(v)}>
+            <SelectTrigger className="w-28 h-8">
+              <SelectValue placeholder={t.glowMedium} />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="soft">{t.glowSoft}</SelectItem>
+              <SelectItem value="medium">{t.glowMedium}</SelectItem>
+              <SelectItem value="strong">{t.glowStrong}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1 px-2 py-1 rounded border border-border">
+                <span className={`inline-block w-2.5 h-2.5 rounded-full ${dot}`} />
+                <Radio className="w-4 h-4 opacity-70" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>Stream: {statusText}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <Button variant="ghost" size="icon" onClick={onOpenCmd} aria-label="Command">
+          <Command className="w-5 h-5" />
+        </Button>
+        <div className="hidden sm:flex items-center gap-3 pr-3 mr-1 border-r border-border">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <ShieldCheck className="w-4 h-4" />
+            <span>{t.accessLevel}</span>
+          </div>
+          <div className="w-40">
+            <Slider value={[adminLevel]} onValueChange={(v) => setAdminLevel(v[0])} min={0} max={100} step={5} />
+          </div>
+        </div>
+        <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Toggle theme">
+          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </Button>
+        <Button variant="ghost" size="icon" onClick={() => setLang(lang === LANG.RU ? LANG.EN : LANG.RU)} aria-label="Toggle language">
+          <Globe2 className="w-5 h-5" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function AdminPanel({ t, adminLevel }) {
+  const disabled = adminLevel < 50;
+  const FeatureRow = ({ icon: Icon, label }) => (
+    <div className="flex items-center justify-between py-2">
+      <div className="flex items-center gap-2 text-sm">
+        <Icon className="w-4 h-4 text-cyan-500" />
+        <span>{label}</span>
+      </div>
+      <Switch disabled={disabled} />
+    </div>
+  );
+  return (
+    <Card className="bg-card/70">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base">{t.features} • <span className="text-xs text-muted-foreground">{t.adminOnly}</span></CardTitle>
+      </CardHeader>
+      <Separator />
+      <CardContent className="pt-3">
+        <FeatureRow icon={Settings2} label={t.manageAgents} />
+        <FeatureRow icon={Database} label={t.clearCache} />
+        <FeatureRow icon={ShieldCheck} label={t.forceRestart} />
+        {disabled && (
+          <p className="text-xs text-muted-foreground mt-3">{t.adminOnly}: 50+</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function HistoryPanel({ t, onLoad, history }) {
+  if (!history.length) return <div className="text-sm text-muted-foreground">{t.noHistory}</div>;
+  return (
+    <ScrollArea className="h-[600px] pr-2">
+      <div className="space-y-2">
+        {history.map(item => (
+          <Card key={item.id} className="hover:bg-accent/50 transition-colors">
+            <CardHeader className="py-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm">{new Date(item.createdAt).toLocaleString()}</CardTitle>
+                <Button size="sm" variant="outline" onClick={() => onLoad?.(item)}>
+                  Load
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <pre className="text-xs text-muted-foreground whitespace-pre-wrap line-clamp-3">{item.content}</pre>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </ScrollArea>
+  );
+}
 
 function App() {
   const [lang, setLang] = useState(loadFromStorage(STORAGE_KEYS.lang, LANG.RU));
@@ -111,9 +255,7 @@ function App() {
                 {panels.terminal && (
                   <TabsContent value="terminal" className="m-0">
                     <InputComposer t={t} lang={lang} softMaxLength={5000} onSubmit={async ({text, files}) => {
-                      // Save text to history
                       await handleSaveHistory(text);
-                      // Append a line to stream
                       try { await appendOutput({ sessionId, agentId: selectedAgentId, content: `[input] ${text.slice(0,120)}` }); } catch(e){}
                       toast({ title: 'Sent', description: 'Сообщение отправлено' });
                     }} />
