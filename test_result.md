@@ -226,7 +226,7 @@
 
 ## test_plan:
   current_focus:
-    - "Responsive layout & overlays"
+    - "Preview Overlay E2E"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
