@@ -205,24 +205,13 @@ function App() {
           <div className="flex-1 min-h-0 overflow-hidden p-3 md:p-4">
             {/* Tabs order and enabled via admin config */}
             <TabsList className="md:hidden mb-3">
-              {uiConfig.tabs.order.filter(k => uiConfig.tabs.enabled?.[k] !== false).map(k => (
-                <TabsTrigger key={k} value={k}>
-                  {k === 'terminal' ? t.terminal : k === 'admin' ? t.admin : t.history}
-                    {/* Draggable InputComposer in edit mode */}
-                    {adminOpen && (
-                      <DraggableBlock id="live_input" positions={dragPositions} updatePosition={updateDragPos} testId="drag-input">
-                        <div className="absolute">
-                          <InputComposer t={t} lang={lang} softMaxLength={5000} features={uiConfig.features} onSubmit={async ({text, files}) => {
-                            await handleSaveHistory(text);
-                            try { await appendOutput({ sessionId, agentId: selectedAgentId, content: `[input] ${text.slice(0,120)}` }); } catch(e){}
-                            toast({ title: 'Sent', description: 'Сообщение отправлено' });
-                          }} />
-                        </div>
-                      </DraggableBlock>
-                    )}
-
-                </TabsTrigger>
-              ))}
+              {uiConfig.tabs.order
+                .filter(k => uiConfig.tabs.enabled?.[k] !== false)
+                .map(k => (
+                  <TabsTrigger key={k} value={k}>
+                    {k === 'terminal' ? t.terminal : k === 'admin' ? t.admin : t.history}
+                  </TabsTrigger>
+                ))}
             </TabsList>
 
             {uiConfig.tabs.order.filter(k => uiConfig.tabs.enabled?.[k] !== false).map(k => (
