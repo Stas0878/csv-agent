@@ -159,7 +159,7 @@ function App() {
 
         {/* Main content area: flex column, inner blocks scroll */}
         <div className="flex-1 min-w-0 min-h-0 flex flex-col">
-          <Topbar t={t} theme={theme} setTheme={setTheme} lang={lang} setLang={(l)=>{ setLang(l); saveToStorage(STORAGE_KEYS.lang, l); }} adminLevel={adminLevel} setAdminLevel={setAdminLevel} panels={panels} setPanels={setPanels} onOpenCmd={()=>setOpenCmd(true)} glowMode={glowMode} setGlowMode={setGlowMode} connStatus={connStatus} onOpenPreview={openPreview} canOpenPreview={!isEmbedCtx} />
+          <Topbar t={t} theme={theme} setTheme={setTheme} lang={lang} setLang={(l)=>{ setLang(l); saveToStorage(STORAGE_KEYS.lang, l); }} adminLevel={adminLevel} setAdminLevel={setAdminLevel} panels={panels} setPanels={setPanels} onOpenCmd={()=>setOpenCmd(true)} glowMode={uiConfig.effects.glowMode} setGlowMode={(m)=> setUiConfig(prev => ({ ...prev, effects: { ...prev.effects, glowMode: m } }))} connStatus={connStatus} onOpenPreview={openPreview} canOpenPreview={!isEmbedCtx} onOpenAdmin={()=> setAdminOpen(true)} customButtons={uiConfig.custom.buttons} />
 
           {/* Content area fills remaining height and scrolls inside */}
           <div className="flex-1 min-h-0 overflow-hidden p-3 md:p-4">
