@@ -1,41 +1,60 @@
 const { test, expect } = require('@playwright/test');
 
-// Basic checks for embedded preview overlay and actions
+// E2E tests for Preview Overlay (iframe)
+// Validates:
+// - iframe src uses origin+pathname with ?embed=1 and _={nonce}
+// - iframe renders actual app content
+// - "Open in new tab" opens popup with ?embed=1 and renders
+// - "Refresh" regenerates nonce and reloads iframe
 
-test.describe('Embedded preview overlay', () => {
-  const url = process.env.E2E_BASE_URL || 'http://localhost:3000';
+test.describe('Preview Overlay - iframe behavior', () => {
+  const base = process.env.E2E_BASE_URL || 'http://localhost:3000';
 
-  test('Open overlay with animation, see minimal UI in embed, and mode persistence', async ({ page }) => {
+  test('Loads iframe with correct URL and renders content; refresh & open-in-new-tab work', async ({ page }) => {
     await page.setViewportSize({ width: 1366, height: 800 });
-    await page.goto(url);
+    await page.goto(base);
 
-    const previewBtn = page.getByRole('button', { name: 'Предпросмотр' }).or(page.getByRole('button', { name: 'Preview' }));
+    // Open preview overlay
+    const previewBtn = page.getByRole('button', { name: /Предпросмотр|Preview/ });
     await previewBtn.click();
 
-    // Overlay should appear with animation (use short wait and opacity check)
-    const overlay = page.locator('div[style*="opacity"]:has(iframe[title="Live Preview"])');
-    await page.waitForTimeout(300);
-    const iframe = page.locator('iframe[title="Live Preview"]');
-    await expect(iframe).toBeVisible();
+    // Wait for animation + iframe presence
+    const iframeEl = page.locator('iframe[title="Live Preview"]');
+    await expect(iframeEl).toBeVisible();
 
-    // Action buttons should be visible
-    await expect(page.getByRole('button', { name: 'Open in new tab' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Refresh preview' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Share link' })).toBeVisible();
+    // Check iframe src
+    const pageUrl = new URL(await page.url());
+    const expectedBase = pageUrl.origin + pageUrl.pathname;
+    const src1 = await iframeEl.getAttribute('src');
+    expect(src1).toBeTruthy();
+    expect(src1.startsWith(expectedBase)).toBeTruthy();
+    expect(src1.includes('embed=1')).toBeTruthy();
+    expect(src1.includes('_=')).toBeTruthy();
 
-    // Click open in new tab — mode should persist as fullscreen
-    await page.getByRole('button', { name: 'Open in new tab' }).click();
-    await page.waitForTimeout(200);
+    // Ensure content rendered inside iframe (RU or EN)
+    const frame = await iframeEl.elementHandle();
+    const iframe = await frame.contentFrame();
+    await expect(iframe.getByText(/Терминал|Terminal/)).toBeVisible();
 
-    // Close overlay
-    await page.getByRole('button', { name: 'Close preview' }).click();
-    await page.waitForTimeout(250);
-    await expect(iframe).toBeHidden();
+    // Refresh preview -> src (nonce) should change and content should still be visible
+    const prevSrc = src1;
+    const refreshBtn = page.getByRole('button', { name: /Обновить|Refresh preview/ });
+    await refreshBtn.click();
+    await expect.poll(async () => await iframeEl.getAttribute('src')).not.toBe(prevSrc);
 
-    // Reopen preview – should prefer fullscreen (new tab open). We just re-click and ensure overlay remains closed after click
-    await previewBtn.click();
-    // Give it a moment (opening new tab is not captured, but overlay should not be visible)
-    await page.waitForTimeout(300);
-    await expect(iframe).toBeHidden();
+    // Wait content after reload
+    const iframe2 = await (await iframeEl.elementHandle()).contentFrame();
+    await expect(iframe2.getByText(/Терминал|Terminal/)).toBeVisible();
+
+    // Open in new tab -> popup should open with ?embed=1 and render
+    const [popup] = await Promise.all([
+      page.waitForEvent('popup'),
+      page.getByRole('button', { name: /Открыть в новой вкладке|Open in new tab/ }).click(),
+    ]);
+
+    await popup.waitForLoadState('domcontentloaded');
+    const popupUrl = new URL(popup.url());
+    expect(popupUrl.searchParams.get('embed')).toBe('1');
+    await expect(popup.getByText(/Терминал|Terminal/)).toBeVisible();
   });
 });
