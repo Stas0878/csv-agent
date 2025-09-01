@@ -180,9 +180,10 @@ function App() {
               {panels.terminal && (
                 <TabsContent value="terminal" className="m-0 h-full">
                   <div className="h-full flex flex-col min-h-0">
-                    {/* Composer above terminal */}
-                    <div className="pb-3">
-                      <InputComposer t={t} lang={lang} softMaxLength={5000} onSubmit={async ({text, files}) => {
+                    {/* Composer above/below terminal by admin config */}
+                    {uiConfig.layout.composerPosition === 'above' && (
+                      <div className="pb-3">
+                        <InputComposer t={t} lang={lang} softMaxLength={5000} features={uiConfig.features} onSubmit={async ({text, files}) => {
                         await handleSaveHistory(text);
                         try { await appendOutput({ sessionId, agentId: selectedAgentId, content: `[input] ${text.slice(0,120)}` }); } catch(e){}
                         toast({ title: 'Sent', description: 'Сообщение отправлено' });
