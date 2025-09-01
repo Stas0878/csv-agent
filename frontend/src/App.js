@@ -189,6 +189,17 @@ function App() {
                         toast({ title: 'Sent', description: 'Сообщение отправлено' });
                       }} />
                     </div>
+                    )}
+                    {uiConfig.layout.composerPosition === 'below' && (
+                      <div className="pt-3">
+                        <InputComposer t={t} lang={lang} softMaxLength={5000} features={uiConfig.features} onSubmit={async ({text, files}) => {
+                          await handleSaveHistory(text);
+                          try { await appendOutput({ sessionId, agentId: selectedAgentId, content: `[input] ${text.slice(0,120)}` }); } catch(e){}
+                          toast({ title: 'Sent', description: 'Сообщение отправлено' });
+                        }} />
+                      </div>
+                    )}
+
                     {/* Terminal fills remaining space */}
                     <div className="flex-1 min-h-0 overflow-auto">
                       <TerminalPanel t={t} selectedAgentId={selectedAgentId} lang={lang} sessionId={sessionId} onSaved={handleSaveHistory} />
