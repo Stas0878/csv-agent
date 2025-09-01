@@ -359,7 +359,20 @@ function App() {
         />
       )}
 
-      {/* Embedded Preview Overlay with placement from admin */}
+      {/* Admin Overlay */}
+      {adminOpen && (
+        <AdminOverlay onClose={() => setAdminOpen(false)} config={uiConfig} setConfig={setUiConfig} />
+      )}
+
+      {/* Render minimal draggable test blocks in admin mode for validation */}
+      {adminOpen && (
+        <>
+          <DraggableBlock id="drag-left" testId="drag-left" positions={dragPositions} updatePosition={updateDragPos}>
+            <div className="absolute bg-card/80 border rounded shadow p-2 w-64 h-40">Левая панель</div>
+          </DraggableBlock>
+        </>
+      )}
+
       {/* PreviewOverlay simplified: always overlay when open, no edit embedding */}
       <PreviewOverlay t={t} open={previewOpen} onClose={() => setPreviewOpen(false)} onSetMode={setPreviewMode} placement={uiConfig.preview.placement} />
 
