@@ -106,6 +106,8 @@ function App() {
 
   // Preview state & handlers
   const isEmbedCtx = useMemo(() => new URLSearchParams(window.location.search).get('embed') === '1', []);
+  // When in embed mode, hide sidebars and topbar for minimal UI
+  const embedClass = isEmbedCtx ? 'embed-mode' : '';
   const [previewOpen, setPreviewOpen] = useState(false);
   const previewMode = loadFromStorage(STORAGE_KEYS.previewMode, 'embedded');
   const openPreview = () => {
