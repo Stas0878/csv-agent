@@ -7,9 +7,22 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
   const toggleRight = () => setConfig(prev => ({ ...prev, layout: { ...prev.layout, rightCollapsed: !prev.layout.rightCollapsed } }));
   const setComposer = (pos) => setConfig(prev => ({ ...prev, layout: { ...prev.layout, composerPosition: pos } }));
 
+  const tabs = config.tabs || { order: ["terminal","admin","history"], enabled: { terminal: true, admin: true, history: true } };
+  const setTabs = (next) => setConfig(prev => ({ ...prev, tabs: next }));
+
+  const moveTab = (fromIdx, toIdx) => {
+    const order = [...tabs.order];
+    const [item] = order.splice(fromIdx, 1);
+    order.splice(toIdx, 0, item);
+    setTabs({ ...tabs, order });
+  };
+  const toggleTab = (key) => {
+    setTabs({ ...tabs, enabled: { ...tabs.enabled, [key]: !tabs.enabled[key] } });
+  };
+
   return (
     <div className="fixed inset-0 z-[80] bg-black/40 backdrop-blur flex items-center justify-center">
-      <div className="bg-card border rounded-lg shadow-xl w-[680px] max-w-[96vw] p-4">
+      <div className="bg-card border rounded-lg shadow-xl w-[760px] max-w-[96vw] p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="text-sm font-medium">Admin Settings</div>
           <Button size="sm" variant="secondary" onClick={onClose}>Close</Button>
@@ -37,6 +50,24 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
             <div className="flex gap-2">
               <Button size="sm" variant={config.preview.placement==='center'?'secondary':'outline'} onClick={()=> setConfig(prev=>({...prev, preview:{...prev.preview, placement:'center'}}))}>Center</Button>
               <Button size="sm" variant={config.preview.placement==='right'?'secondary':'outline'} onClick={()=> setConfig(prev=>({...prev, preview:{...prev.preview, placement:'right'}}))}>Right</Button>
+            </div>
+          </div>
+
+          <div className="md:col-span-2">
+            <div className="font-medium mb-2">Tabs</div>
+            <div className="flex items-center gap-3 flex-wrap">
+              {tabs.order.map((k, idx) => (
+                <div key={k} className="border rounded px-2 py-1 flex items-center gap-2">
+                  <label className="flex items-center gap-1">
+                    <input type="checkbox" checked={tabs.enabled[k] !== false} onChange={()=> toggleTab(k)} />
+                    <span className="capitalize">{k}</span>
+                  </label>
+                  <div className="flex gap-1">
+                    <Button size="sm" variant="outline" disabled={idx===0} onClick={()=> moveTab(idx, idx-1)}>↑</Button>
+                    <Button size="sm" variant="outline" disabled={idx===tabs.order.length-1} onClick={()=> moveTab(idx, idx+1)}>↓</Button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
