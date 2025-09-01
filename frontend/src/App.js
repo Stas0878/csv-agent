@@ -242,10 +242,10 @@ function App() {
           </div>
         </div>
 
-        {/* Desktop right sidebar */}
+        {/* Desktop right sidebar (supports swap) */}
         {rightOpen && !isNarrow && (
-          <div className="hidden lg:block h-full">
-            <RightSidebar t={t} agents={agents} selectedAgentId={selectedAgentId} onSelectAgent={setSelectedAgentId} onToggleAgent={handleToggleAgent} onRefresh={handleRefreshStatuses} glowMode={glowMode} onCollapse={() => setRightOpen(false)} />
+          <div className={`hidden lg:block h-full ${uiConfig.layout.swapSidebars ? 'order-0' : 'order-3'}`}>
+            <RightSidebar t={t} agents={agents} selectedAgentId={selectedAgentId} onSelectAgent={setSelectedAgentId} onToggleAgent={handleToggleAgent} onRefresh={handleRefreshStatuses} glowMode={uiConfig.effects.glowMode} onCollapse={() => setRightOpen(false)} />
           </div>
         )}
         {!rightOpen && !isNarrow && (
