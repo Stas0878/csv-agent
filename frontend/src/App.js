@@ -139,12 +139,13 @@ function App() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const previewMode = loadFromStorage(STORAGE_KEYS.previewMode, 'embedded');
   const openPreview = () => {
-    if (previewMode === 'fullscreen') {
+    try {
       const u = new URL(window.location.origin + window.location.pathname);
       u.searchParams.set('embed', '1');
       window.open(u.toString(), '_blank', 'noopener,noreferrer');
-    } else {
-      setPreviewOpen(true);
+      setPreviewOpen(false);
+    } catch (_) {
+      setPreviewOpen(false);
     }
   };
   const setPreviewMode = (mode) => {
