@@ -16,10 +16,10 @@ export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent,
   const selected = agents.find(a => a.id === selectedAgentId) || agents[0];
 
   return (
-    <aside className="h-full w-72 min-w-[260px] max-w-[320px] bg-card/60 backdrop-blur-sm flex flex-col">
-      <div className="px-4 py-4 border-b border-border flex items-center justify-between">
+    <aside className="h-full w-56 lg:w-64 min-w-[224px] lg:min-w-[256px] max-w-[320px] bg-card/60 backdrop-blur-sm flex flex-col" aria-label="Left sidebar">
+      <div className="px-4 py-4 border-b border-border flex items-center justify-between sticky top-0 z-20 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <BrandLogo glowMode={glowMode} />
-        <Button size="icon" variant="ghost" onClick={onCollapse} title="Collapse">
+        <Button size="icon" variant="ghost" onClick={onCollapse} title="Collapse" aria-label="Collapse left sidebar" aria-expanded="true">
           <PanelLeft className="w-4 h-4" />
         </Button>
       </div>
@@ -38,7 +38,7 @@ export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent,
           <DropdownMenuContent align="start" className="w-72">
             <DropdownMenuLabel className="flex items-center justify-between">
               <span>{t.agents}</span>
-              <Button size="sm" variant="ghost" onClick={onRefresh}>
+              <Button size="sm" variant="ghost" onClick={onRefresh} aria-label="Refresh agent statuses">
                 <RefreshCcw className="w-4 h-4" />
               </Button>
             </DropdownMenuLabel>
@@ -63,7 +63,7 @@ export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent,
       </div>
 
       <div className="px-3">
-        <Button variant="outline" className="w-full" onClick={onRefresh}>
+        <Button variant="outline" className="w-full" onClick={onRefresh} aria-label="Refresh statuses">
           <RefreshCcw className="w-4 h-4 mr-2" /> {t.refresh}
         </Button>
       </div>

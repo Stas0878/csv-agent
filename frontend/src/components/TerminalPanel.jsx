@@ -76,7 +76,7 @@ export default function TerminalPanel({ t, selectedAgentId, lang, sessionId, onS
 
   return (
     <Card className="h-full flex flex-col bg-card/70">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 sticky top-0 z-10 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">{t.terminal}</CardTitle>
           <div className="flex items-center gap-2">
@@ -88,35 +88,35 @@ export default function TerminalPanel({ t, selectedAgentId, lang, sessionId, onS
         </div>
       </CardHeader>
       <Separator />
-      <CardContent className="p-0 flex-1 flex flex-col">
-        <div className="flex-1 p-3">
+      <CardContent className="p-0 flex-1 flex flex-col min-h-0">
+        <div className="flex-1 p-3 overflow-auto">
           <Textarea
             value={content}
             onChange={e => setContent(e.target.value)}
             placeholder="# Output from agents appears here..."
-            className="h-[420px] md:h-[520px] w-full resize-none bg-background/60 border-input font-mono text-sm leading-relaxed"
+            className="h-full min-h-[220px] w-full resize-none bg-background/60 border-input font-mono text-sm leading-relaxed"
             style={{ fontFamily: monofont }}
           />
         </div>
-        <div className="border-t border-border p-3 flex items-center justify-between gap-2 flex-wrap">
+        <div className="border-t border-border p-3 flex items-center justify-between gap-2 flex-wrap sticky bottom-0 bg-card/80">
           <div className="flex items-center gap-2">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button size="sm" variant="secondary" onClick={handleCopy}>
+                  <Button size="sm" variant="secondary" onClick={handleCopy} aria-label="Copy output">
                     <Copy className="w-4 h-4 mr-2" /> {t.copy}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>{t.copy}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <Button size="sm" variant="secondary" onClick={handleDownload}>
+            <Button size="sm" variant="secondary" onClick={handleDownload} aria-label="Download output">
               <Download className="w-4 h-4 mr-2" /> {t.download}
             </Button>
-            <Button size="sm" variant="secondary" onClick={handleSaveHistory}>
+            <Button size="sm" variant="secondary" onClick={handleSaveHistory} aria-label="Save to history">
               <Save className="w-4 h-4 mr-2" /> {t.save}
             </Button>
-            <Button size="sm" variant="secondary" onClick={handleShare}>
+            <Button size="sm" variant="secondary" onClick={handleShare} aria-label="Share output">
               <Share2 className="w-4 h-4 mr-2" /> {t.share}
             </Button>
           </div>
@@ -124,10 +124,10 @@ export default function TerminalPanel({ t, selectedAgentId, lang, sessionId, onS
             <Button size="sm" variant="outline" onClick={async () => {
               const chunk = mockAppendChunk(selectedAgentId);
               await appendOutput({ sessionId, agentId: selectedAgentId, content: chunk });
-            }}>
+            }} aria-label="Append mock chunk">
               <Play className="w-4 h-4 mr-2" /> {t.appended}
             </Button>
-            <Button size="sm" variant="destructive" onClick={() => setContent("") }>
+            <Button size="sm" variant="destructive" onClick={() => setContent("") } aria-label="Clear output">
               <Trash2 className="w-4 h-4 mr-2" /> {t.clear}
             </Button>
           </div>

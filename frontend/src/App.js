@@ -67,6 +67,23 @@ function App() {
   useEffect(() => { saveToStorage(STORAGE_KEYS.leftOpen, leftOpen); }, [leftOpen]);
   useEffect(() => { saveToStorage(STORAGE_KEYS.rightOpen, rightOpen); }, [rightOpen]);
 
+  // Responsive: track viewport and auto-collapse on <= 1024px
+  const [isNarrow, setIsNarrow] = useState(() => typeof window !== 'undefined' ? window.innerWidth <= 1024 : false);
+  useEffect(() => {
+    const onResize = () => {
+      const narrow = window.innerWidth <= 1024;
+      setIsNarrow(narrow);
+      if (narrow) {
+        // auto-collapse on narrow screens (do not auto-open on wider)
+        setLeftOpen(false);
+        setRightOpen(false);
+      }
+    };
+    window.addEventListener('resize', onResize);
+    onResize();
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   useEffect(() => { (async () => {
     try { const a = await getAgents(); const safe = AgentsSchema.safeParse(a); if (safe.success) setAgents(safe.data); else toast({ title: "Agents", description: "Invalid data" }); } catch(e){ toast({ title: "Agents", description: "Failed to load" }); }
     try { const h = await getHistory(); const safeH = HistorySchema.safeParse(h); if (safeH.success) setHistory(safeH.data); } catch(e){}
@@ -89,20 +106,21 @@ function App() {
   return (
     <div className="w-screen h-screen overflow-hidden bg-gradient-to-b from-background to-background/60 text-foreground">
       <div className="flex h-full">
-        {leftOpen && (
-          <div className="hidden sm:block h-full">
+        {/* Desktop left sidebar */}
+        {leftOpen && !isNarrow && (
+          <div className="hidden lg:block h-full">
             <MegaSidebar t={t} agents={agents} selectedAgentId={selectedAgentId} onSelectAgent={setSelectedAgentId} onToggleAgent={handleToggleAgent} onRefresh={handleRefreshStatuses} glowMode={glowMode} onCollapse={() => setLeftOpen(false)} />
           </div>
         )}
-        {!leftOpen && (
-          <div className="hidden sm:flex w-3 h-full items-center justify-center">
-            <button className="bg-background border rounded-full w-6 h-6" onClick={() => setLeftOpen(true)} title="Expand">
+        {!leftOpen && !isNarrow && (
+          <div className="hidden lg:flex w-3 h-full items-center justify-center">
+            <button className="bg-background border rounded-full w-6 h-6" onClick={() => setLeftOpen(true)} title="Expand" aria-label="Open left sidebar" aria-expanded={leftOpen}>
               <PanelLeft className="w-4 h-4" />
             </button>
           </div>
         )}
 
-        {/* Main content area: flex column, no global scroll, inner blocks scroll */}
+        {/* Main content area: flex column, inner blocks scroll */}
         <div className="flex-1 min-w-0 min-h-0 flex flex-col">
           <Tabs value={tab} onValueChange={setTab}>
             {/* Topbar (fixed height) */}
@@ -120,13 +138,17 @@ function App() {
                 {panels.terminal && (
                   <TabsContent value="terminal" className="m-0 h-full">
                     <div className="h-full flex flex-col min-h-0">
-                      <InputComposer t={t} lang={lang} softMaxLength={5000} onSubmit={async ({text, files}) => {
-                        await handleSaveHistory(text);
-                        try { await appendOutput({ sessionId, agentId: selectedAgentId, content: `[input] ${text.slice(0,120)}` }); } catch(e){}
-                        toast({ title: 'Sent', description: 'Сообщение отправлено' });
-                      }} />
-                      <div className="flex-1 min-h-0 overflow-auto mt-3">
+                      {/* Terminal scrolls above */}
+                      <div className="flex-1 min-h-0 overflow-auto mt-0">
                         <TerminalPanel t={t} selectedAgentId={selectedAgentId} lang={lang} sessionId={sessionId} onSaved={handleSaveHistory} />
+                      </div>
+                      {/* Composer pinned at bottom */}
+                      <div className="pt-3">
+                        <InputComposer t={t} lang={lang} softMaxLength={5000} onSubmit={async ({text, files}) => {
+                          await handleSaveHistory(text);
+                          try { await appendOutput({ sessionId, agentId: selectedAgentId, content: `[input] ${text.slice(0,120)}` }); } catch(e){}
+                          toast({ title: 'Sent', description: 'Сообщение отправлено' });
+                        }} />
                       </div>
                     </div>
                   </TabsContent>
@@ -140,7 +162,7 @@ function App() {
                         <div className="xl:col-span-2"><AdminPanel t={t} adminLevel={adminLevel} /></div>
                         <div className="xl:col-span-1">
                           <Card className="bg-card/70">
-                            <CardHeader className="pb-2"><CardTitle className="text-base">{t.agents}</CardTitle></CardHeader>
+                            <CardHeader className="pb-2 sticky top-0 z-10 bg-card/80"><CardTitle className="text-base">{t.agents}</CardTitle></CardHeader>
                             <Separator />
                             <CardContent className="pt-3">
                               <ScrollArea className="h-[520px] pr-2">
@@ -179,19 +201,50 @@ function App() {
           </Tabs>
         </div>
 
-        {rightOpen && (
-          <div className="hidden sm:block h-full">
+        {/* Desktop right sidebar */}
+        {rightOpen && !isNarrow && (
+          <div className="hidden lg:block h-full">
             <RightSidebar t={t} agents={agents} selectedAgentId={selectedAgentId} onSelectAgent={setSelectedAgentId} onToggleAgent={handleToggleAgent} onRefresh={handleRefreshStatuses} glowMode={glowMode} onCollapse={() => setRightOpen(false)} />
           </div>
         )}
-        {!rightOpen && (
-          <div className="hidden sm:flex w-3 h-full items-center justify-center">
-            <button className="bg-background border rounded-full w-6 h-6" onClick={() => setRightOpen(true)} title="Expand">
+        {!rightOpen && !isNarrow && (
+          <div className="hidden lg:flex w-3 h-full items-center justify-center">
+            <button className="bg-background border rounded-full w-6 h-6" onClick={() => setRightOpen(true)} title="Expand" aria-label="Open right sidebar" aria-expanded={rightOpen}>
               <PanelRight className="w-4 h-4" />
             </button>
           </div>
         )}
       </div>
+
+      {/* Mobile/Tablet overlays for sidebars */}
+      {isNarrow && leftOpen && (
+        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Left sidebar overlay">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setLeftOpen(false)} aria-label="Close left sidebar backdrop"></div>
+          <div className="absolute left-0 top-0 h-full w-56 lg:w-64 bg-card/95 shadow-xl animate-in slide-in-from-left">
+            <MegaSidebar t={t} agents={agents} selectedAgentId={selectedAgentId} onSelectAgent={setSelectedAgentId} onToggleAgent={handleToggleAgent} onRefresh={handleRefreshStatuses} glowMode={glowMode} onCollapse={() => setLeftOpen(false)} />
+          </div>
+        </div>
+      )}
+      {isNarrow && rightOpen && (
+        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Right sidebar overlay">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setRightOpen(false)} aria-label="Close right sidebar backdrop"></div>
+          <div className="absolute right-0 top-0 h-full w-56 lg:w-64 bg-card/95 shadow-xl animate-in slide-in-from-right">
+            <RightSidebar t={t} agents={agents} selectedAgentId={selectedAgentId} onSelectAgent={setSelectedAgentId} onToggleAgent={handleToggleAgent} onRefresh={handleRefreshStatuses} glowMode={glowMode} onCollapse={() => setRightOpen(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Floating expand buttons on narrow screens */}
+      {isNarrow && !leftOpen && (
+        <button className="fixed left-2 top-1/2 -translate-y-1/2 z-40 bg-background/90 border rounded-full w-8 h-8 flex items-center justify-center shadow" onClick={() => setLeftOpen(true)} aria-label="Open left sidebar">
+          <PanelLeft className="w-4 h-4" />
+        </button>
+      )}
+      {isNarrow && !rightOpen && (
+        <button className="fixed right-2 top-1/2 -translate-y-1/2 z-40 bg-background/90 border rounded-full w-8 h-8 flex items-center justify-center shadow" onClick={() => setRightOpen(true)} aria-label="Open right sidebar">
+          <PanelRight className="w-4 h-4" />
+        </button>
+      )}
 
       <CommandDialog open={openCmd} onOpenChange={setOpenCmd}>
         <CommandInput placeholder="Type a command..." />
