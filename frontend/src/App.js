@@ -30,6 +30,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
 import { connectStream } from "./lib/stream";
 import { AgentsSchema, HistorySchema } from "./lib/schema";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import DraggableBlock from "./components/DraggableBlock";
+import useDraggablePanels from "./hooks/useDraggablePanels";
+import AdminOverlay from "./components/AdminOverlay";
 
 function useTheme() {
   const [theme, setTheme] = useState(loadFromStorage(STORAGE_KEYS.theme, "dark"));
