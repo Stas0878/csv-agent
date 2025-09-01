@@ -130,6 +130,7 @@ export const tDict = {
     refreshPreview: "Refresh",
     shareLink: "Share link",
     close: "Close",
+    stream: "Stream",
     layout: "Layout",
     swapSidebars: "Swap sidebars",
     leftSidebar: "Left sidebar",
