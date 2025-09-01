@@ -330,6 +330,7 @@ function App() {
 
       <Toaster />
     </div>
+    </DndProvider>
   );
 }
 
