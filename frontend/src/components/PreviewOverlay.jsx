@@ -40,7 +40,8 @@ export default function PreviewOverlay({ t, open, onClose, onSetMode, placement 
     ? 'ml-auto mr-2 md:mr-4 w-[92vw] md:w-[60vw]'
     : 'm-2 md:m-4';
 
-  if (editMode) {
+  // editMode removed for stability
+  if (false) {
     return (
       <div className={`rounded-lg overflow-hidden border shadow-xl bg-card/90`} style={{ width: '720px', height: '70vh' }}>
         <div className="h-12 shrink-0 flex items-center justify-between px-3 border-b bg-card/80">
