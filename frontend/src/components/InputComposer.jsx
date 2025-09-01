@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { toast } from "../hooks/use-toast";
 import { Mic, MicOff, Paperclip, Send, X } from "lucide-react";
@@ -100,7 +99,6 @@ export default function InputComposer({
     if (!text && files.length === 0) { toast({ title: 'Empty', description: 'Нет данных для отправки' }); return; }
     try {
       await onSubmit?.(payload);
-      // cleanup on success
       setText("");
       setFiles(prev => { prev.forEach(f => URL.revokeObjectURL(f.url)); return []; });
     } catch (e) {
@@ -122,7 +120,6 @@ export default function InputComposer({
   return (
     <Card className="bg-card/70">
       <CardContent className="p-3" onDrop={onDrop} onDragOver={onDragOver}>
-        {/* Textarea */}
         <Textarea
           ref={taRef}
           value={text}
@@ -132,7 +129,6 @@ export default function InputComposer({
           style={{ width: 'clamp(16.5cm, 100%, 26cm)', overflowX: 'auto' }}
         />
 
-        {/* Controls below input */}
         <div className="mt-2 flex items-center gap-2 flex-wrap">
           <TooltipProvider>
             <Tooltip>
@@ -165,7 +161,6 @@ export default function InputComposer({
           </div>
         </div>
 
-        {/* Files preview */}
         {files.length > 0 && (
           <div className="mt-3 border rounded">
             {files.map((f, idx) => (
@@ -173,8 +168,7 @@ export default function InputComposer({
                 <div className="flex items-start gap-3">
                   <div className="w-[80px] h-[56px] bg-muted flex items-center justify-center overflow-hidden rounded border">
                     {ACCEPT_IMG.has((f.name.split('.').pop()||'').toLowerCase()) ? (
-                      // eslint-disable-next-line jsx-a11y/alt-text
-                      <img src={f.url} className="max-w-[80px] max-h-[56px] object-cover" />
+                      <img src={f.url} alt={f.name} className="max-w-[80px] max-h-[56px] object-cover" />
                     ) : (
                       <span className="text-xs">📄</span>
                     )}
