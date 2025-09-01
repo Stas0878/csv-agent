@@ -67,6 +67,7 @@ export default function PreviewOverlay({ t, open, onClose, src, onSetMode, place
     );
   }
 
+  try { /* render */ } catch (e) { console.error('PreviewOverlay render error', e); }
   return (
     <AnimatePresence>
       {open && (
