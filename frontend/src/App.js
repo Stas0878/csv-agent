@@ -125,6 +125,10 @@ function App() {
 
   const [openCmd, setOpenCmd] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
+
+  // Draggable panels demo positions (non-destructive, overlayed)
+  const defaultPositions = { leftPanel: { x: 8, y: 80 }, rightPanel: { x: 820, y: 80 }, inputComposer: { x: 8, y: 560 }, previewOverlay: { x: 280, y: 200 } };
+  const [dragPositions, updateDragPos] = useDraggablePanels(defaultPositions);
   useEffect(() => { const onKey = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setOpenCmd(v => !v); } }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, []);
 
   // Preview state & handlers
