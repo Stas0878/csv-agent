@@ -1,13 +1,44 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { validateUIState, validateAction } from "../core/validation/ValidationEngine";
+import { toast } from "../hooks/use-toast";
 
 export default function AdminOverlay({ onClose, config, setConfig }) {
   const [status, setStatus] = useState({ color: 'green', errors: [] });
 
+  // Collect current draggable panel rects for validation (admin open)
+  const getPanelsPayload = () => {
+    try {
+      const ids = [
+        { id: 'left', sel: '[data-testid="drag-left"]' },
+        { id: 'right', sel: '[data-testid="drag-right"]' },
+        { id: 'input', sel: '[data-testid="drag-input"]' },
+        { id: 'preview', sel: '[data-testid="drag-preview"]' },
+      ];
+      const rects = ids
+        .map(({ id, sel }) => {
+          const el = document.querySelector(sel);
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          return { id, x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) };
+        })
+        .filter(Boolean);
+      const container = { w: window.innerWidth, h: window.innerHeight };
+      return { container, rects };
+    } catch (_) {
+      return undefined;
+    }
+  };
+
+  const blockWith = (errors) => {
+    setStatus({ color: 'red', errors: errors || [] });
+    toast({ title: 'Validation error', description: (errors || []).join('\n') });
+  };
+
   const apply = (type, next) => {
-    const res = validateUIState(next);
-    if (!res.valid) { setStatus({ color: 'red', errors: res.errors || [] }); return; }
+    const panelsPayload = getPanelsPayload();
+    const res = validateUIState(next, panelsPayload);
+    if (!res.valid) return blockWith(res.errors || []);
     setStatus({ color: 'green', errors: [] });
     setConfig(next);
   };
@@ -24,7 +55,7 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
     order.splice(toIdx, 0, item);
     const next = { ...config, tabs: { ...tabs, order } };
     const res = validateAction({ type: 'tabs/update', payload: { order, enabled: tabs.enabled } });
-    if (!res.valid) return setStatus({ color: 'red', errors: res.errors || [] });
+    if (!res.valid) return blockWith(res.errors || []);
     setStatus({ color: 'green', errors: [] });
     setConfig(next);
   };
@@ -32,7 +63,7 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
     const enabled = { ...tabs.enabled, [key]: !(tabs.enabled[key] !== false) };
     const next = { ...config, tabs: { ...tabs, enabled } };
     const res = validateAction({ type: 'tabs/update', payload: { order: tabs.order, enabled } });
-    if (!res.valid) return setStatus({ color: 'red', errors: res.errors || [] });
+    if (!res.valid) return blockWith(res.errors || []);
     setStatus({ color: 'green', errors: [] });
     setConfig(next);
   };
@@ -41,7 +72,7 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
   const toggleFeature = (k) => {
     const next = { ...config, features: { ...features, [k]: !features[k] } };
     const res = validateAction({ type: 'features/toggle', payload: next.features });
-    if (!res.valid) return setStatus({ color: 'red', errors: res.errors || [] });
+    if (!res.valid) return blockWith(res.errors || []);
     setStatus({ color: 'green', errors: [] });
     setConfig(next);
   };
@@ -49,7 +80,7 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
   const setPreviewMode = (mode) => {
     const next = { ...config, preview: { ...config.preview, mode } };
     const res = validateAction({ type: 'preview/set', payload: { mode } });
-    if (!res.valid) return setStatus({ color: 'red', errors: res.errors || [] });
+    if (!res.valid) return blockWith(res.errors || []);
     setStatus({ color: 'green', errors: [] });
     setConfig(next);
   };
