@@ -8,14 +8,15 @@ export default function PreviewOverlay({ t, open, onClose, src, onSetMode, place
   const [nonce, setNonce] = useState(0);
   const url = useMemo(() => {
     try {
-      const u = new URL(window.location.href);
+      const u = new URL(window.location.origin + window.location.pathname);
       u.searchParams.set('embed', '1');
-      return `${u.toString()}${u.search ? '&' : '?'}_=${nonce}`;
+      u.searchParams.set('_', String(nonce));
+      return u.toString();
     } catch (_) {
-      const base = src || `${window.location.origin}${window.location.pathname}?embed=1`;
-      return `${base}${base.includes('?') ? '&' : '?'}_=${nonce}`;
+      const base = `${window.location.origin}${window.location.pathname}?embed=1&_=${nonce}`;
+      return base;
     }
-  }, [src, nonce]);
+  }, [nonce]);
 
   const handleRefresh = () => setNonce(Date.now());
   const handleShare = async () => {
