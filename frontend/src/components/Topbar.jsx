@@ -9,7 +9,7 @@ import { Moon, Sun, Globe2, Command, Radio, Eye, Settings } from "lucide-react";
 export default function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, panels, setPanels, onOpenCmd, glowMode, setGlowMode, connStatus, onOpenPreview, canOpenPreview = true, onOpenAdmin, customButtons = [] }) {
   const connColor = connStatus === 'open' ? 'bg-emerald-500' : connStatus === 'connecting' ? 'bg-amber-500' : 'bg-rose-500';
   return (
-    <div className="sticky top-0 z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+    <div className="sticky top-0 z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b" data-testid="topbar">
       <div className="h-14 px-3 md:px-4 flex items-center gap-3 justify-between">
         <div className="flex items-center gap-2">
           <span className={`inline-block w-2.5 h-2.5 rounded-full ${connColor}`} aria-label={`Connection ${connStatus}`}></span>
