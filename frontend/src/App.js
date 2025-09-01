@@ -178,7 +178,7 @@ function App() {
     <div className={`w-screen h-screen overflow-hidden bg-gradient-to-b from-background to-background/60 text-foreground ${embedClass}`}>
       <div className="flex h-full">
         {/* Desktop left sidebar (supports swap) */}
-        {leftOpen && !isNarrow && (
+        {leftOpen && !isNarrow && !adminOpen && (
           <div className={`hidden lg:block h-full ${uiConfig.layout.swapSidebars ? 'order-3' : 'order-0'}`}>
             <MegaSidebar t={t} agents={agents} selectedAgentId={selectedAgentId} onSelectAgent={setSelectedAgentId} onToggleAgent={handleToggleAgent} onRefresh={handleRefreshStatuses} glowMode={uiConfig.effects.glowMode} onCollapse={() => setLeftOpen(false)} />
           </div>
