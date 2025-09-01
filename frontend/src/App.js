@@ -10,6 +10,7 @@ import BrandLogo from "./components/BrandLogo";
 import ClientLogs from "./components/ClientLogs";
 import Topbar from "./components/Topbar";
 import AdminPanel from "./components/AdminPanel";
+import AdminSettingsDialog from "./components/AdminSettingsDialog";
 import HistoryPanel from "./components/HistoryPanel";
 import PreviewOverlay from "./components/PreviewOverlay";
 import { tDict, LANG, STORAGE_KEYS, loadFromStorage, saveToStorage } from "./mock/mock";
