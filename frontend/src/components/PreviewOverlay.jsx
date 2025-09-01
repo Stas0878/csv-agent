@@ -1,10 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
 import { ExternalLink, RefreshCw, Share2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function PreviewOverlay({ t, open, onClose, src, onSetMode, placement = 'center' }) {
+export default function PreviewOverlay({ t, open, onClose, src, onSetMode, placement = 'center', editMode = false }) {
   const [nonce, setNonce] = useState(0);
   const url = useMemo(() => {
     try {
@@ -31,7 +30,7 @@ export default function PreviewOverlay({ t, open, onClose, src, onSetMode, place
   };
   const handleOpenNew = () => {
     onSetMode?.("fullscreen");
-    const u = new URL(window.location.href);
+    const u = new URL(window.location.origin + window.location.pathname);
     u.searchParams.set('embed', '1');
     window.open(u.toString(), "_blank", "noopener,noreferrer");
     onClose?.();
@@ -40,6 +39,33 @@ export default function PreviewOverlay({ t, open, onClose, src, onSetMode, place
   const frameWrapperClass = placement === 'right'
     ? 'ml-auto mr-2 md:mr-4 w-[92vw] md:w-[60vw]'
     : 'm-2 md:m-4';
+
+  if (editMode) {
+    return (
+      <div className={`rounded-lg overflow-hidden border shadow-xl bg-card/90`} style={{ width: '720px', height: '70vh' }}>
+        <div className="h-12 shrink-0 flex items-center justify-between px-3 border-b bg-card/80">
+          <div className="text-sm font-medium">{t.preview}</div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="secondary" onClick={handleOpenNew} aria-label="Open in new tab">
+              <ExternalLink className="w-4 h-4 mr-2" /> {t.openInNewTab}
+            </Button>
+            <Button size="sm" variant="secondary" onClick={handleRefresh} aria-label="Refresh preview">
+              <RefreshCw className="w-4 h-4 mr-2" /> {t.refreshPreview}
+            </Button>
+            <Button size="sm" variant="secondary" onClick={handleShare} aria-label="Share link">
+              <Share2 className="w-4 h-4 mr-2" /> {t.shareLink}
+            </Button>
+            <Button size="icon" variant="ghost" onClick={onClose} aria-label="Close preview">
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        <div className="w-full h-[calc(70vh-3rem)]">
+          <iframe title="Live Preview" src={url} className="w-full h-full border-0 bg-white rounded-b-lg" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AnimatePresence>
@@ -75,8 +101,6 @@ export default function PreviewOverlay({ t, open, onClose, src, onSetMode, place
                 </Button>
               </div>
             </div>
-            {/* Fallback hint if something blocks same-origin preview (CSP, router): */}
-            {/* <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground pointer-events-none">Если предпросмотр не отображается, откройте в новой вкладке.</div> */}
             <div className="h-[calc(100vh-2rem-3rem)] md:h-[calc(100vh-2rem-3rem)]">
               <iframe title="Live Preview" src={url} className="w-full h-full border-0 bg-white rounded-b-lg" />
             </div>
