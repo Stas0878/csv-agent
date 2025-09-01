@@ -336,7 +336,7 @@ function App() {
           <DraggableBlock id="leftPanel" positions={dragPositions} updatePosition={updateDragPos}>
             <div className="bg-card/70 border rounded p-3 w-64 h-40 shadow">Левая панель (demo)</div>
           </DraggableBlock>
-          <DraggableBlock id="rightPanel" positions={dragPositions}>
+          <DraggableBlock id="rightPanel" positions={dragPositions} updatePosition={updateDragPos}>
             <div className="bg-card/70 border rounded p-3 w-64 h-40 shadow">Правая панель (demo)</div>
           </DraggableBlock>
           <DraggableBlock id="inputComposer" positions={dragPositions}>
