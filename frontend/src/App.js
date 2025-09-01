@@ -181,6 +181,90 @@ function App() {
 
           {/* Content area fills remaining height and scrolls inside */}
           <div className="flex-1 min-h-0 overflow-hidden p-3 md:p-4">
+            {/* Tabs order and enabled via admin config */}
+            <TabsList className="md:hidden mb-3">
+              {uiConfig.tabs.order.filter(k => uiConfig.tabs.enabled?.[k] !== false).map(k => (
+                <TabsTrigger key={k} value={k}>
+                  {k === 'terminal' ? t.terminal : k === 'admin' ? t.admin : t.history}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {uiConfig.tabs.order.filter(k => uiConfig.tabs.enabled?.[k] !== false).map(k => (
+              k === 'terminal' ? (
+                panels.terminal && (
+                  <TabsContent key={k} value="terminal" className="m-0 h-full">
+                    <div className="h-full flex flex-col min-h-0">
+                      {uiConfig.layout.composerPosition === 'above' && (
+                        <div className="pb-3">
+                          <InputComposer t={t} lang={lang} softMaxLength={5000} features={uiConfig.features} onSubmit={async ({text, files}) => {
+                            await handleSaveHistory(text);
+                            try { await appendOutput({ sessionId, agentId: selectedAgentId, content: `[input] ${text.slice(0,120)}` }); } catch(e){}
+                            toast({ title: 'Sent', description: 'Сообщение отправлено' });
+                          }} />
+                        </div>
+                      )}
+                      <div className="flex-1 min-h-0 overflow-auto">
+                        <TerminalPanel t={t} selectedAgentId={selectedAgentId} lang={lang} sessionId={sessionId} onSaved={handleSaveHistory} />
+                      </div>
+                      {uiConfig.layout.composerPosition === 'below' && (
+                        <div className="pt-3">
+                          <InputComposer t={t} lang={lang} softMaxLength={5000} features={uiConfig.features} onSubmit={async ({text, files}) => {
+                            await handleSaveHistory(text);
+                            try { await appendOutput({ sessionId, agentId: selectedAgentId, content: `[input] ${text.slice(0,120)}` }); } catch(e){}
+                            toast({ title: 'Sent', description: 'Сообщение отправлено' });
+                          }} />
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                )
+              ) : k === 'admin' ? (
+                panels.admin && (
+                  <TabsContent key={k} value="admin" className="m-0 h-full">
+                    <div className="h-full flex flex-col min-h-0 overflow-auto">
+                      <Dashboard />
+                      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mt-4">
+                        <div className="xl:col-span-2"><AdminPanel t={t} adminLevel={adminLevel} /></div>
+                        <div className="xl:col-span-1">
+                          <Card className="bg-card/70">
+                            <CardHeader className="pb-2 sticky top-0 z-10 bg-card/80"><CardTitle className="text-base">{t.agents}</CardTitle></CardHeader>
+                            <Separator />
+                            <CardContent className="pt-3">
+                              <ScrollArea className="h-[520px] pr-2">
+                                {agents.map(a => (
+                                  <div key={a.id} className="flex items-center justify-between py-2 border-b last:border-b-0">
+                                    <div className="text-sm flex items-center gap-2">
+                                      <span className={`inline-block w-2.5 h-2.5 rounded-full ${a.status === 'online' ? 'bg-emerald-500' : a.status === 'broken' ? 'bg-rose-500' : 'bg-zinc-400'}`}></span>
+                                      <span className="font-medium">{a.name}</span>
+                                      {a.ai && <span className="text-[10px] px-1 py-0.5 rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">AI</span>}
+                                      <span className="text-xs text-muted-foreground capitalize">{a.status}</span>
+                                    </div>
+                                    <Switch checked={a.enabled} onCheckedChange={(v) => handleToggleAgent(a.id, v)} />
+                                  </div>
+                                ))}
+                              </ScrollArea>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </div>
+                      <div className="mt-4"><ClientLogs /></div>
+                    </div>
+                  </TabsContent>
+                )
+              ) : (
+                panels.history && (
+                  <TabsContent key={k} value="history" className="m-0 h-full">
+                    <div className="h-full flex flex-col min-h-0">
+                      <div className="flex-1 min-h-0 overflow-auto">
+                        <HistoryPanel t={t} history={history} onLoad={(item) => { saveToStorage(STORAGE_KEYS.terminal, item.content); toast({ title: t.history, description: t.loadedFromHistory }); setTab("terminal"); }} />
+                      </div>
+                    </div>
+                  </TabsContent>
+                )
+              )
+            ))}
+
             <Tabs value={tab} onValueChange={setTab}>
               <TabsList className="md:hidden mb-3">
                 {panels.terminal && <TabsTrigger value="terminal">{t.terminal}</TabsTrigger>}
