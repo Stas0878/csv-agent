@@ -120,7 +120,7 @@ export default function InputComposer({
 
   return (
     <Card className="bg-card/70">
-      <CardContent className="p-3" onDrop={onDrop} onDragOver={onDragOver}>
+      <CardContent className="p-3" onDrop={features.dragdrop ? onDrop : undefined} onDragOver={features.dragdrop ? onDragOver : undefined}>
         <Textarea
           ref={taRef}
           value={text}
