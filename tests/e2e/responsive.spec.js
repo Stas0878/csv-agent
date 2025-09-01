@@ -12,6 +12,10 @@ test.describe('Responsive layout', () => {
     await page.goto(url);
     // Left expand button should be hidden on desktop when sidebar is open
     const leftInline = page.locator('aside[aria-label="Left sidebar"]');
+    // InputComposer should be above terminal actions, check send button visible
+    const sendBtn = page.getByRole('button', { name: 'Отправить' });
+    await expect(sendBtn).toBeVisible();
+
     await expect(leftInline).toBeVisible();
     const rightExpandBtn = page.locator('button[aria-label="Open right sidebar"]');
     await expect(rightExpandBtn).toBeVisible();
