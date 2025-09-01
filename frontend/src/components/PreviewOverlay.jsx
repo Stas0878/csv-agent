@@ -7,8 +7,14 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function PreviewOverlay({ t, open, onClose, src, onSetMode }) {
   const [nonce, setNonce] = useState(0);
   const url = useMemo(() => {
-    const base = src || `${window.location.origin}/?embed=1`;
-    return `${base}${base.includes("?") ? "&" : "?"}_=${nonce}`;
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.set('embed', '1');
+      return `${u.toString()}${u.search ? '&' : '?'}_=${nonce}`;
+    } catch (_) {
+      const base = src || `${window.location.origin}${window.location.pathname}?embed=1`;
+      return `${base}${base.includes('?') ? '&' : '?'}_=${nonce}`;
+    }
   }, [src, nonce]);
 
   const handleRefresh = () => setNonce(Date.now());
