@@ -79,6 +79,17 @@ function App() {
     tabs: { order: ['terminal','admin','history'], enabled: { terminal: true, admin: true, history: true } },
     custom: { buttons: [] },
   };
+  // Guard against corrupted tabs config in localStorage
+  const sanitizeConfig = (cfg) => {
+    try {
+      const order = Array.isArray(cfg?.tabs?.order) ? cfg.tabs.order.filter(Boolean) : ['terminal','admin','history'];
+      const enabled = cfg?.tabs?.enabled || { terminal: true, admin: true, history: true };
+      const known = ['terminal','admin','history'];
+      const safeOrder = order.filter(k => known.includes(k));
+      const normalized = { ...cfg, tabs: { order: safeOrder.length ? safeOrder : ['terminal','admin','history'], enabled } };
+      return normalized;
+    } catch(e) { return defaultConfig; }
+  };
   const [uiConfig, setUiConfig] = useState(loadFromStorage(STORAGE_KEYS.uiConfig, defaultConfig));
   useEffect(() => { saveToStorage(STORAGE_KEYS.uiConfig, uiConfig); }, [uiConfig]);
 
