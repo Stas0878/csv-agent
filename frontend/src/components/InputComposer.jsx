@@ -14,6 +14,7 @@ export default function InputComposer({
   softMaxLength = null,
   maxFileSize = 10 * 1024 * 1024,
   allowedFileTypes = ["txt","pdf","jpg","jpeg","png","gif","webp"],
+  features = { voice: true, dragdrop: true, counter: true },
   onSubmit, // (payload: {text, files}) => Promise<void> | void
 }) {
   const [text, setText] = useState("");
