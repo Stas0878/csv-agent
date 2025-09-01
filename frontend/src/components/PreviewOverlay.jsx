@@ -69,46 +69,31 @@ export default function PreviewOverlay({ t, open, onClose, onSetMode, placement 
   }
 
   try { /* render */ } catch (e) { console.error('PreviewOverlay render error', e); }
+  if (!open) return null;
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className="fixed inset-0 z-[70] flex flex-col bg-background/80 backdrop-blur"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.24 }}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.24 }}
-            className={`${frameWrapperClass} rounded-lg overflow-hidden border shadow-xl bg-card/90 backdrop-blur`}
-          >
-            <div className="h-12 shrink-0 flex items-center justify-between px-3 border-b bg-card/80">
-              <div className="text-sm font-medium">{t.preview}</div>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="secondary" onClick={handleOpenNew} aria-label="Open in new tab">
-                  <ExternalLink className="w-4 h-4 mr-2" /> {t.openInNewTab}
-                </Button>
-                <Button size="sm" variant="secondary" onClick={handleRefresh} aria-label="Refresh preview">
-                  <RefreshCw className="w-4 h-4 mr-2" /> {t.refreshPreview}
-                </Button>
-                <Button size="sm" variant="secondary" onClick={handleShare} aria-label="Share link">
-                  <Share2 className="w-4 h-4 mr-2" /> {t.shareLink}
-                </Button>
-                <Button size="icon" variant="ghost" onClick={onClose} aria-label="Close preview">
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-            <div className="h-[calc(100vh-2rem-3rem)] md:h-[calc(100vh-2rem-3rem)]">
-              <iframe title="Live Preview" src={url} className="w-full h-full border-0 bg-white rounded-b-lg" />
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div className="fixed inset-0 z-[70] flex flex-col bg-background/80 backdrop-blur">
+      <div className={`${frameWrapperClass} rounded-lg overflow-hidden border shadow-xl bg-card/90 backdrop-blur`}>
+        <div className="h-12 shrink-0 flex items-center justify-between px-3 border-b bg-card/80">
+          <div className="text-sm font-medium">{t.preview}</div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="secondary" onClick={handleOpenNew} aria-label="Open in new tab">
+              <ExternalLink className="w-4 h-4 mr-2" /> {t.openInNewTab}
+            </Button>
+            <Button size="sm" variant="secondary" onClick={handleRefresh} aria-label="Refresh preview">
+              <RefreshCw className="w-4 h-4 mr-2" /> {t.refreshPreview}
+            </Button>
+            <Button size="sm" variant="secondary" onClick={handleShare} aria-label="Share link">
+              <Share2 className="w-4 h-4 mr-2" /> {t.shareLink}
+            </Button>
+            <Button size="icon" variant="ghost" onClick={onClose} aria-label="Close preview">
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        <div className="h-[calc(100vh-2rem-3rem)] md:h-[calc(100vh-2rem-3rem)]">
+          <iframe title="Live Preview" src={url} className="w-full h-full border-0 bg-white rounded-b-lg" />
+        </div>
+      </div>
+    </div>
   );
 }
