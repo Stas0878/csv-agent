@@ -52,6 +52,9 @@ export default function PreviewOverlay({ t, open, onClose, src, onSetMode }) {
             className="m-2 md:m-4 rounded-lg overflow-hidden border shadow-xl bg-card/90 backdrop-blur"
           >
             <div className="h-12 shrink-0 flex items-center justify-between px-3 border-b bg-card/80">
+            {/* Fallback hint if something blocks same-origin preview (CSP, router): */}
+            {/* <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground pointer-events-none">Если предпросмотр не отображается, откройте в новой вкладке.</div> */}
+
               <div className="text-sm font-medium">{t.preview}</div>
               <div className="flex items-center gap-2">
                 <Button size="sm" variant="secondary" onClick={handleOpenNew} aria-label="Open in new tab">
