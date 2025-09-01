@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { ExternalLink, RefreshCw, Share2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function PreviewOverlay({ t, open, onClose, src, onSetMode, placement = 'center', editMode = false }) {
+export default function PreviewOverlay({ t, open, onClose, onSetMode, placement = 'center' }) {
   const [nonce, setNonce] = useState(0);
   const url = useMemo(() => {
     try {
