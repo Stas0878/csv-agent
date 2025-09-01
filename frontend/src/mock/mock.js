@@ -56,6 +56,7 @@ export const tDict = {
     refreshPreview: "Обновить",
     shareLink: "Поделиться ссылкой",
     close: "Закрыть",
+    stream: "Поток",
     // Admin modal labels
     layout: "Компоновка",
     swapSidebars: "Поменять местами сайдбары",
