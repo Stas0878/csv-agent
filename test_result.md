@@ -227,19 +227,28 @@
   test_sequence: 2
   run_ui: false
 
+  - task: "ValidationEngine E2E"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/AdminOverlay.jsx"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "ValidationEngine E2E tests requested for tabs validation, panel drag validation, and composer functionality after feature toggles."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE: AdminOverlay component is not rendering when admin button is clicked. Fixed missing AdminOverlay rendering in App.js but component still not appearing. TEST RESULTS: (1) Tabs validation: FAIL - AdminOverlay not accessible, (2) Panel drag validation: FAIL - AdminOverlay not accessible, (3) Composer functionality: PASS - 'Отправить' button visible and functional. AdminOverlay component exists but has rendering issues preventing validation tests from running."
+
 ## test_plan:
   current_focus:
     - "ValidationEngine E2E"
-  stuck_tasks: []
+  stuck_tasks:
+    - "ValidationEngine E2E"
   test_all: false
   test_priority: "high_first"
-  - agent: "main"
-  - agent: "main"
-    message: "Run tests/e2e/validation.spec.js. Verify: (1) panel cannot overlap topbar (drag-left blocked), (2) cannot disable all tabs (error banner), (3) composer remains functional after disabling voice/dragdrop/counter. On failures, include failing step and suggest fixes."
-
-    message: "Frontend responsive refactor done. Please run only the new e2e/responsive.spec.js on multiple widths (1920, 1366, 1024, 768, 390). Verify: sidebars fixed widths on desktop, auto-collapse overlays under 1024px with dim backdrop, sticky headers in panels, InputComposer anchored at bottom, internal scrolling works. No backend tests needed."
-  - agent: "main"
-    message: "Please run tests/e2e/preview.spec.js (and optionally tests/e2e/responsive.spec.js). Validate iframe src uses origin+pathname with embed=1 and nonce, verify content renders inside iframe, check Refresh updates nonce and Open in new tab opens with embed=1. Report pass/fail and include failing iframe src and current route on errors."
 
 
 
