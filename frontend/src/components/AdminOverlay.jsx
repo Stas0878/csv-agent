@@ -1,35 +1,79 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { Button } from "./ui/button";
+import { validateUIState, validateAction } from "../core/validation/ValidationEngine";
 
 export default function AdminOverlay({ onClose, config, setConfig }) {
-  const toggleSwap = () => setConfig(prev => ({ ...prev, layout: { ...prev.layout, swapSidebars: !prev.layout.swapSidebars } }));
-  const toggleLeft = () => setConfig(prev => ({ ...prev, layout: { ...prev.layout, leftCollapsed: !prev.layout.leftCollapsed } }));
-  const toggleRight = () => setConfig(prev => ({ ...prev, layout: { ...prev.layout, rightCollapsed: !prev.layout.rightCollapsed } }));
-  const setComposer = (pos) => setConfig(prev => ({ ...prev, layout: { ...prev.layout, composerPosition: pos } }));
+  const [status, setStatus] = useState({ color: 'green', errors: [] });
+
+  const apply = (type, next) => {
+    const res = validateUIState(next);
+    if (!res.valid) {
+      setStatus({ color: 'red', errors: res.errors || [] });
+      return; // block
+    }
+    setStatus({ color: 'green', errors: [] });
+    setConfig(next);
+  };
+
+  const toggleSwap = () => apply('layout/swap', { ...config, layout: { ...config.layout, swapSidebars: !config.layout.swapSidebars } });
+  const toggleLeft = () => apply('layout/leftCollapsed', { ...config, layout: { ...config.layout, leftCollapsed: !config.layout.leftCollapsed } });
+  const toggleRight = () => apply('layout/rightCollapsed', { ...config, layout: { ...config.layout, rightCollapsed: !config.layout.rightCollapsed } });
+  const setComposer = (pos) => apply('layout/composer', { ...config, layout: { ...config.layout, composerPosition: pos } });
 
   const tabs = config.tabs || { order: ["terminal","admin","history"], enabled: { terminal: true, admin: true, history: true } };
-  const setTabs = (next) => setConfig(prev => ({ ...prev, tabs: next }));
-
   const moveTab = (fromIdx, toIdx) => {
     const order = [...tabs.order];
     const [item] = order.splice(fromIdx, 1);
     order.splice(toIdx, 0, item);
-    setTabs({ ...tabs, order });
+    const next = { ...config, tabs: { ...tabs, order } };
+    const res = validateAction({ type: 'tabs/update', payload: { order, enabled: tabs.enabled } });
+    if (!res.valid) return setStatus({ color: 'red', errors: res.errors || [] });
+    setStatus({ color: 'green', errors: [] });
+    setConfig(next);
   };
   const toggleTab = (key) => {
-    setTabs({ ...tabs, enabled: { ...tabs.enabled, [key]: !tabs.enabled[key] } });
+    const enabled = { ...tabs.enabled, [key]: !(tabs.enabled[key] !== false) };
+    const next = { ...config, tabs: { ...tabs, enabled } };
+    const res = validateAction({ type: 'tabs/update', payload: { order: tabs.order, enabled } });
+    if (!res.valid) return setStatus({ color: 'red', errors: res.errors || [] });
+    setStatus({ color: 'green', errors: [] });
+    setConfig(next);
   };
 
   const features = config.features || { voice: true, dragdrop: true, counter: true };
-  const toggleFeature = (k) => setConfig(prev => ({ ...prev, features: { ...prev.features, [k]: !prev.features[k] } }));
+  const toggleFeature = (k) => {
+    const next = { ...config, features: { ...features, [k]: !features[k] } };
+    const res = validateAction({ type: 'features/toggle', payload: next.features });
+    if (!res.valid) return setStatus({ color: 'red', errors: res.errors || [] });
+    setStatus({ color: 'green', errors: [] });
+    setConfig(next);
+  };
+
+  const setPreviewMode = (mode) => {
+    const next = { ...config, preview: { ...config.preview, mode } };
+    const res = validateAction({ type: 'preview/set', payload: { mode } });
+    if (!res.valid) return setStatus({ color: 'red', errors: res.errors || [] });
+    setStatus({ color: 'green', errors: [] });
+    setConfig(next);
+  };
 
   return (
     <div className="fixed inset-0 z-[80] bg-black/40 backdrop-blur flex items-center justify-center">
       <div className="bg-card border rounded-lg shadow-xl w-[820px] max-w-[96vw] p-4">
         <div className="flex items-center justify-between mb-3">
-          <div className="text-sm font-medium">Admin Settings</div>
+          <div className="text-sm font-medium flex items-center gap-2">
+            <span className={`inline-block w-2.5 h-2.5 rounded-full ${status.color === 'green' ? 'bg-emerald-500' : status.color === 'yellow' ? 'bg-amber-500' : 'bg-rose-500'}`}></span>
+            <span>Admin Settings</span>
+          </div>
           <Button size="sm" variant="secondary" onClick={onClose}>Close</Button>
         </div>
+
+        {status.errors?.length ? (
+          <div className="mb-3 p-2 text-sm bg-rose-500/10 border border-rose-500/30 rounded text-rose-400">
+            {status.errors.map((e, i) => (<div key={i}>• {e}</div>))}
+          </div>
+        ) : null}
+
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="space-y-3">
             <div className="font-medium">Layout</div>
@@ -43,23 +87,18 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
                 <Button size="sm" variant={config.layout.composerPosition==='below'?'secondary':'outline'} onClick={()=> setComposer('below')}>Below</Button>
               </div>
             </div>
-            <div>
-              <div className="font-medium mt-3 mb-1">Features</div>
-              <label className="flex items-center justify-between"><span>Voice input</span><input type="checkbox" checked={features.voice} onChange={()=> toggleFeature('voice')} /></label>
-              <label className="flex items-center justify-between"><span>Drag & Drop</span><input type="checkbox" checked={features.dragdrop} onChange={()=> toggleFeature('dragdrop')} /></label>
-              <label className="flex items-center justify-between"><span>Counter</span><input type="checkbox" checked={features.counter} onChange={()=> toggleFeature('counter')} /></label>
-            </div>
+
+            <div className="font-medium mt-3 mb-1">Features</div>
+            <label className="flex items-center justify-between"><span>Voice input</span><input type="checkbox" checked={features.voice} onChange={()=> toggleFeature('voice')} /></label>
+            <label className="flex items-center justify-between"><span>Drag & Drop</span><input type="checkbox" checked={features.dragdrop} onChange={()=> toggleFeature('dragdrop')} /></label>
+            <label className="flex items-center justify-between"><span>Counter</span><input type="checkbox" checked={features.counter} onChange={()=> toggleFeature('counter')} /></label>
           </div>
 
           <div className="space-y-3">
             <div className="font-medium">Preview</div>
             <div className="flex gap-2">
-              <Button size="sm" variant={config.preview.mode==='embedded'?'secondary':'outline'} onClick={()=> setConfig(prev=>({...prev, preview:{...prev.preview, mode:'embedded'}}))}>Embedded</Button>
-              <Button size="sm" variant={config.preview.mode==='fullscreen'?'secondary':'outline'} onClick={()=> setConfig(prev=>({...prev, preview:{...prev.preview, mode:'fullscreen'}}))}>Fullscreen</Button>
-            </div>
-            <div className="flex gap-2">
-              <Button size="sm" variant={config.preview.placement==='center'?'secondary':'outline'} onClick={()=> setConfig(prev=>({...prev, preview:{...prev.preview, placement:'center'}}))}>Center</Button>
-              <Button size="sm" variant={config.preview.placement==='right'?'secondary':'outline'} onClick={()=> setConfig(prev=>({...prev, preview:{...prev.preview, placement:'right'}}))}>Right</Button>
+              <Button size="sm" variant={config.preview.mode==='embedded'?'secondary':'outline'} onClick={()=> setPreviewMode('embedded')}>Embedded</Button>
+              <Button size="sm" variant={config.preview.mode==='fullscreen'?'secondary':'outline'} onClick={()=> setPreviewMode('fullscreen')}>Fullscreen</Button>
             </div>
 
             <div className="font-medium mt-4">Tabs</div>
