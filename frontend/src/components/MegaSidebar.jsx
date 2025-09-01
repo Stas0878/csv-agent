@@ -4,32 +4,24 @@ import { ScrollArea } from "./ui/scroll-area";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Switch } from "./ui/switch";
 import { Badge } from "./ui/badge";
-import { ChevronDown, RefreshCcw } from "lucide-react";
+import { ChevronDown, RefreshCcw, PanelLeft } from "lucide-react";
 import BrandLogo from "./BrandLogo";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
-import { tDict, LANG } from "../mock/mock";
 
 const StatusDot = ({ status }) => {
   const color = status === "online" ? "bg-emerald-500" : status === "broken" ? "bg-rose-500" : "bg-zinc-400";
   return <span className={`inline-block w-2.5 h-2.5 rounded-full ${color} mr-2`} />;
 };
 
-export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent, onToggleAgent, onRefresh, glowMode = "strong" }) {
+export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent, onToggleAgent, onRefresh, glowMode = "strong", onCollapse }) {
   const selected = agents.find(a => a.id === selectedAgentId) || agents[0];
 
   return (
     <aside className="h-full w-full sm:w-72 bg-card/60 backdrop-blur-sm flex flex-col">
-      <div className="px-4 py-4 border-b border-border flex items-center justify-end">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <BrandLogo glowMode={glowMode} />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent> {t.logoTooltip} </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+      <div className="px-4 py-4 border-b border-border flex items-center justify-between">
+        <BrandLogo glowMode={glowMode} />
+        <Button size="icon" variant="ghost" onClick={onCollapse} title="Collapse">
+          <PanelLeft className="w-4 h-4" />
+        </Button>
       </div>
 
       <div className="px-3 py-3">
@@ -76,14 +68,7 @@ export default function MegaSidebar({ t, agents, selectedAgentId, onSelectAgent,
         </Button>
       </div>
 
-      <div className="px-3 py-4 text-xs text-muted-foreground">
-        <div className="mb-2">• {t.selectAgent}</div>
-        <div>• {t.refresh}</div>
-      </div>
-
-      <div className="mt-auto p-3 border-t border-border text-xs text-muted-foreground">
-        v0.2 UI
-      </div>
+      <div className="mt-auto p-3 border-t border-border text-xs text-muted-foreground">v0.2 UI</div>
     </aside>
   );
 }

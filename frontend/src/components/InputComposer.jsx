@@ -5,9 +5,9 @@ import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { toast } from "../hooks/use-toast";
-import { Mic, MicOff, Paperclip, Send, Trash2, X, Languages } from "lucide-react";
+import { Mic, MicOff, Paperclip, Send, X } from "lucide-react";
 
-const ACCEPT_IMG = new Set(["jpg","jpeg","png","gif","webp"]); 
+const ACCEPT_IMG = new Set(["jpg","jpeg","png","gif","webp"]);
 
 export default function InputComposer({
   t,
@@ -121,48 +121,51 @@ export default function InputComposer({
 
   return (
     <Card className="bg-card/70">
-      <CardContent className="p-3">
-        <div className="flex items-start gap-3" onDrop={onDrop} onDragOver={onDragOver}>
-          <div className="flex-1">
-            <Textarea
-              ref={taRef}
-              value={text}
-              onChange={e => setText(e.target.value)}
-              placeholder={"Введите сообщение..."}
-              className="min-h-[58px] resize-none bg-background/60 border-input font-mono text-sm leading-relaxed"
-              style={{ width: 'clamp(16.5cm, 100%, 26cm)', overflowX: 'auto' }}
-            />
-            <div className="flex items-center justify-between mt-2">
-              <div className="text-xs text-muted-foreground">{softMaxLength ? `${counter} / ${softMaxLength}` : `${counter} символов`}</div>
-              <div className="flex items-center gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="secondary" size="sm" onClick={() => inputRef.current?.click()}>
-                        <Paperclip className="w-4 h-4 mr-2" /> Файлы
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Добавить файлы (drag&drop поддерживается)</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <input ref={inputRef} type="file" multiple className="hidden" onChange={onPickFiles} />
-                {!listening ? (
-                  <Button variant="outline" size="sm" onClick={startSpeech}>
-                    <Mic className="w-4 h-4 mr-2" /> {lang === 'ru' ? 'Голос (RU)' : 'Voice (EN)'}
-                  </Button>
-                ) : (
-                  <Button variant="destructive" size="sm" onClick={stopSpeech}>
-                    <MicOff className="w-4 h-4 mr-2" /> Stop
-                  </Button>
-                )}
-                <Button size="sm" onClick={handleSend}>
-                  <Send className="w-4 h-4 mr-2" /> Отправить
+      <CardContent className="p-3" onDrop={onDrop} onDragOver={onDragOver}>
+        {/* Textarea */}
+        <Textarea
+          ref={taRef}
+          value={text}
+          onChange={e => setText(e.target.value)}
+          placeholder={"Введите сообщение..."}
+          className="min-h-[58px] resize-none bg-background/60 border-input font-mono text-sm leading-relaxed"
+          style={{ width: 'clamp(16.5cm, 100%, 26cm)', overflowX: 'auto' }}
+        />
+
+        {/* Controls below input */}
+        <div className="mt-2 flex items-center gap-2 flex-wrap">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="secondary" size="sm" onClick={() => inputRef.current?.click()}>
+                  <Paperclip className="w-4 h-4 mr-2" /> Файлы
                 </Button>
-              </div>
-            </div>
+              </TooltipTrigger>
+              <TooltipContent>Добавить файлы (поддерживается drag&drop)</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <input ref={inputRef} type="file" multiple className="hidden" onChange={onPickFiles} />
+
+          {!listening ? (
+            <Button variant="outline" size="sm" onClick={startSpeech}>
+              <Mic className="w-4 h-4 mr-2" /> {lang === 'ru' ? 'Голос (RU)' : 'Voice (EN)'}
+            </Button>
+          ) : (
+            <Button variant="destructive" size="sm" onClick={stopSpeech}>
+              <MicOff className="w-4 h-4 mr-2" /> Stop
+            </Button>
+          )}
+
+          <Button size="sm" onClick={handleSend}>
+            <Send className="w-4 h-4 mr-2" /> Отправить
+          </Button>
+
+          <div className="ml-auto text-xs text-muted-foreground">
+            {softMaxLength ? `${counter} / ${softMaxLength}` : `${counter} символов`}
           </div>
         </div>
 
+        {/* Files preview */}
         {files.length > 0 && (
           <div className="mt-3 border rounded">
             {files.map((f, idx) => (
@@ -170,7 +173,8 @@ export default function InputComposer({
                 <div className="flex items-start gap-3">
                   <div className="w-[80px] h-[56px] bg-muted flex items-center justify-center overflow-hidden rounded border">
                     {ACCEPT_IMG.has((f.name.split('.').pop()||'').toLowerCase()) ? (
-                      <img src={f.url} alt={f.name} className="max-w-[80px] max-h-[56px] object-cover" />
+                      // eslint-disable-next-line jsx-a11y/alt-text
+                      <img src={f.url} className="max-w-[80px] max-h-[56px] object-cover" />
                     ) : (
                       <span className="text-xs">📄</span>
                     )}

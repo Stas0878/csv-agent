@@ -4,7 +4,7 @@ import { ScrollArea } from "./ui/scroll-area";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Switch } from "./ui/switch";
 import { Badge } from "./ui/badge";
-import { ChevronDown, RefreshCcw } from "lucide-react";
+import { ChevronDown, RefreshCcw, PanelRight } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 
 const StatusDot = ({ status }) => {
@@ -12,12 +12,15 @@ const StatusDot = ({ status }) => {
   return <span className={`inline-block w-2.5 h-2.5 rounded-full ${color} mr-2`} />;
 };
 
-export default function RightSidebar({ t, agents, selectedAgentId, onSelectAgent, onToggleAgent, onRefresh, glowMode = "strong" }) {
+export default function RightSidebar({ t, agents, selectedAgentId, onSelectAgent, onToggleAgent, onRefresh, glowMode = "strong", onCollapse }) {
   const selected = agents.find(a => a.id === selectedAgentId) || agents[0];
 
   return (
     <aside className="h-full w-full sm:w-72 bg-card/60 backdrop-blur-sm flex flex-col border-l border-border">
-      <div className="px-4 py-4 border-b border-border flex items-center justify-start">
+      <div className="px-4 py-4 border-b border-border flex items-center justify-between">
+        <Button size="icon" variant="ghost" onClick={onCollapse} title="Collapse">
+          <PanelRight className="w-4 h-4" />
+        </Button>
         <BrandLogo glowMode={glowMode} />
       </div>
 
@@ -65,9 +68,7 @@ export default function RightSidebar({ t, agents, selectedAgentId, onSelectAgent
         </Button>
       </div>
 
-      <div className="mt-auto p-3 border-t border-border text-xs text-muted-foreground">
-        v0.2 UI
-      </div>
+      <div className="mt-auto p-3 border-t border-border text-xs text-muted-foreground">v0.2 UI</div>
     </aside>
   );
 }
