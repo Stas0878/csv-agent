@@ -19,6 +19,16 @@ body {
     overflow: hidden;
 }
 
+/* Minimal UI when embedded (?embed=1): hide sidebars and topbar, keep core content only */
+.embed-mode .hidden, .embed-mode aside[aria-label="Left sidebar"], .embed-mode aside[aria-label="Right sidebar"], .embed-mode .fixed.left-2, .embed-mode .fixed.right-2 {
+  display: none !important;
+}
+.embed-mode .sticky.top-0 { display: none !important; }
+.embed-mode .flex.h-full { padding: 0 !important; }
+.embed-mode .md\:p-4 { padding: 0 !important; }
+.embed-mode .p-3 { padding: 0.5rem !important; }
+.embed-mode .rounded-lg { border-radius: 0.5rem; }
+
 code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
         monospace;
