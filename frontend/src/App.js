@@ -134,10 +134,6 @@ function App() {
 
   const [openCmd, setOpenCmd] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
-  // DEBUG: Log adminOpen state changes
-  useEffect(() => {
-    console.log('AdminOpen state changed:', adminOpen);
-  }, [adminOpen]);
   useEffect(() => { const onKey = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setOpenCmd(v => !v); } }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, []);
 
   // Preview state & handlers
