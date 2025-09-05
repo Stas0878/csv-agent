@@ -13,7 +13,6 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
         { id: 'left', sel: '[data-testid="drag-left"]' },
         { id: 'right', sel: '[data-testid="drag-right"]' },
         { id: 'input', sel: '[data-testid="drag-input"]' },
-        { id: 'preview', sel: '[data-testid="drag-preview"]' },
       ];
       const rects = ids
         .map(({ id, sel }) => {
@@ -23,8 +22,14 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
           return { id, x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) };
         })
         .filter(Boolean);
+      const topbar = document.querySelector('[data-testid="topbar"]');
+      const critical = [];
+      if (topbar) {
+        const r = topbar.getBoundingClientRect();
+        critical.push({ id: 'topbar', x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) });
+      }
       const container = { w: window.innerWidth, h: window.innerHeight };
-      return { container, rects };
+      return { container, rects, critical };
     } catch (_) {
       return undefined;
     }
@@ -85,15 +90,67 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
     setConfig(next);
   };
 
+  const toggleSafeMode = () => {
+    const next = { ...config, safeMode: !config.safeMode };
+    const res = validateUIState(next);
+    if (!res.valid) return blockWith(res.errors || []);
+    setStatus({ color: 'green', errors: [] });
+    setConfig(next);
+  };
+
+  const exportConfig = () => {
+    try {
+      const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'uiConfig.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) { toast({ title: 'Export error', description: String(e) }); }
+  };
+
+  const importConfig = async (file) => {
+    try {
+      const text = await file.text();
+      const next = JSON.parse(text);
+      const res = validateUIState(next);
+      if (!res.valid) return blockWith(res.errors || []);
+      setConfig(next);
+      setStatus({ color: 'green', errors: [] });
+      toast({ title: 'Импорт конфигурации', description: 'Готово' });
+    } catch (e) {
+      blockWith([String(e)]);
+    }
+  };
+
+  const resetConfig = () => {
+    const defaults = window.__MMX_DEFAULT_CONFIG__;
+    if (!defaults) return blockWith(['Default config not available']);
+    const res = validateUIState(defaults);
+    if (!res.valid) return blockWith(res.errors || []);
+    setConfig(defaults);
+    setStatus({ color: 'green', errors: [] });
+  };
+
   return (
     <div className="fixed inset-0 z-[80] bg-black/40 backdrop-blur flex items-center justify-center">
-      <div className="bg-card border rounded-lg shadow-xl w-[820px] max-w-[96vw] p-4">
+      <div className="bg-card border rounded-lg shadow-xl w-[880px] max-w-[96vw] p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="text-sm font-medium flex items-center gap-2">
             <span className={`inline-block w-2.5 h-2.5 rounded-full ${status.color === 'green' ? 'bg-emerald-500' : status.color === 'yellow' ? 'bg-amber-500' : 'bg-rose-500'}`}></span>
             <span>Admin Settings</span>
           </div>
-          <Button size="sm" variant="secondary" onClick={onClose}>Close</Button>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant={config.safeMode ? 'secondary' : 'outline'} onClick={toggleSafeMode}>Safe Mode</Button>
+            <Button size="sm" variant="outline" onClick={exportConfig}>Export</Button>
+            <label className="inline-flex items-center gap-2 text-xs">
+              <input type="file" accept="application/json" onChange={(e)=>{ const f=e.target.files&&e.target.files[0]; if (f) importConfig(f); }} />
+              Import
+            </label>
+            <Button size="sm" variant="destructive" onClick={resetConfig}>Reset</Button>
+            <Button size="sm" variant="secondary" onClick={onClose}>Close</Button>
+          </div>
         </div>
 
         {status.errors?.length ? (
