@@ -185,6 +185,8 @@ function App() {
     } else if (previous.type === 'modal') {
       if (previous.value === 'admin') {
         setAdminOpen(false);
+      } else if (previous.value === 'preview') {
+        setPreviewOpen(false);
       }
       // Return to previous tab if specified
       if (previous.previousTab) {
