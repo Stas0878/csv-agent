@@ -116,10 +116,10 @@ function App() {
     window.addEventListener('resize', onResize); onResize(); return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  useEffect(() => { (async () => {
+  useEffect(() => { if (isEmbed) return; (async () => {
     try { const a = await getAgents(); const safe = AgentsSchema.safeParse(a); if (safe.success) setAgents(safe.data); } catch(e){ /* ignore */ }
     try { const h = await getHistory(); const safeH = HistorySchema.safeParse(h); if (safeH.success) setHistory(safeH.data); } catch(e){}
-  })(); }, []);
+  })(); }, [isEmbed]);
 
   const [connStatus, setConnStatus] = useState('connecting');
   useEffect(() => { if (isEmbed) return; const conn = connectStream({ sessionId, onMessage: (payload) => {
