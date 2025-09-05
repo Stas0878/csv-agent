@@ -41,14 +41,23 @@ export default function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, 
           )}
 
           {showAdmin && (
-            <Button variant="secondary" size="sm" onClick={() => { 
-              console.log('Admin button clicked directly!'); 
-              if (onOpenAdmin) {
-                onOpenAdmin();
-              }
-            }} aria-label="Admin settings">
-              <Settings className="w-4 h-4 mr-2" /> {t.admin}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="secondary" size="sm" onClick={(e) => { 
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Admin button clicked!', e); 
+                    if (onOpenAdmin) {
+                      onOpenAdmin();
+                    }
+                  }} aria-label="Admin settings">
+                    <Settings className="w-4 h-4 mr-2" /> {t.admin}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t.adminSettings}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
 
           <TooltipProvider>
