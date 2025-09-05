@@ -138,7 +138,14 @@ function App() {
 
   // Preview state & handlers
   const [previewOpen, setPreviewOpen] = useState(false);
-  const openPreview = () => { if (!isEmbed) setPreviewOpen(true); };
+  // Force fullscreen preview: always open a new tab with ?embed=1
+  const openPreview = () => {
+    try {
+      const u = new URL(window.location.origin + window.location.pathname);
+      u.searchParams.set('embed', '1');
+      window.open(u.toString(), '_blank', 'noopener,noreferrer');
+    } catch (_) {}
+  };
 
   // If embed, force-close admin/preview and sidebars
   useEffect(() => {
