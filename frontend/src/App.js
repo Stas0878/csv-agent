@@ -209,7 +209,23 @@ function App() {
     });
   }, []); // Only run once on mount
 
-  useEffect(() => { const onKey = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setOpenCmd(v => !v); } }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, []);
+  useEffect(() => { 
+    const onKey = (e) => { 
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { 
+        e.preventDefault(); 
+        setOpenCmd(v => !v); 
+      }
+      // Add keyboard shortcut for back navigation (Alt + Left Arrow or Backspace)
+      if ((e.altKey && e.key === 'ArrowLeft') || (e.key === 'Backspace' && !e.target.matches('input, textarea, [contenteditable]'))) {
+        if (canGoBack) {
+          e.preventDefault();
+          handleGoBack();
+        }
+      }
+    }; 
+    window.addEventListener('keydown', onKey); 
+    return () => window.removeEventListener('keydown', onKey); 
+  }, [canGoBack, handleGoBack]);
 
   // Preview state & handlers
   const [previewOpen, setPreviewOpen] = useState(false);
