@@ -58,6 +58,10 @@ export const tDict = {
     close: "Закрыть",
     stream: "Поток",
     embeddedNote: "Встроенный предпросмотр недоступен — используйте новую вкладку",
+    back: "Назад",
+    navigation: "Навигация",
+    goBack: "Вернуться назад",
+    currentScreen: "Текущий экран",
   },
   en: {
     appName: "MegaMind_X",
