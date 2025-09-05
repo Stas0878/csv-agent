@@ -266,10 +266,21 @@ function App() {
 
           <div className="flex-1 min-h-0 overflow-hidden p-3 md:p-4">
             <Tabs value={tab} onValueChange={handleTabChange}>
-              <TabsList className="md:hidden mb-3">
-                {['terminal','admin','history'].filter(k => uiConfig.tabs.enabled?.[k] !== false).map(k => (
-                  <TabsTrigger key={k} value={k}>{k === 'terminal' ? t.terminal : k === 'admin' ? t.admin : t.history}</TabsTrigger>
-                ))}
+              <TabsList className="md:hidden mb-3 flex items-center justify-between w-full">
+                <div className="flex">
+                  {['terminal','admin','history'].filter(k => uiConfig.tabs.enabled?.[k] !== false).map(k => (
+                    <TabsTrigger key={k} value={k}>{k === 'terminal' ? t.terminal : k === 'admin' ? t.admin : t.history}</TabsTrigger>
+                  ))}
+                </div>
+                {canGoBack && (
+                  <BackButton
+                    canGoBack={canGoBack}
+                    onBack={handleGoBack}
+                    showText={false}
+                    size="sm"
+                    className="ml-2"
+                  />
+                )}
               </TabsList>
 
               {uiConfig.tabs.enabled?.terminal !== false && (
