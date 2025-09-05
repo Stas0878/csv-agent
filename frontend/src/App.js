@@ -57,6 +57,9 @@ function App() {
   useEffect(() => { saveToStorage(STORAGE_KEYS.logoGlow, glowMode); }, [glowMode]);
   const [sessionId] = useState(() => { const existing = loadFromStorage("mmx_session", ""); if (existing) return existing; const sid = `s_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`; saveToStorage("mmx_session", sid); return sid; });
 
+  // Navigation history hook
+  const { pushState, goBack, canGoBack, currentState, previousState } = useNavigationHistory();
+
   // EMBED-SAFE: detect embed=1 and run in simplified safe mode
   const isEmbed = useMemo(() => {
     try { return new URLSearchParams(window.location.search).get('embed') === '1'; } catch { return false; }
