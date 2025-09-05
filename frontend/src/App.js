@@ -255,7 +255,7 @@ function App() {
           />
 
           <div className="flex-1 min-h-0 overflow-hidden p-3 md:p-4">
-            <Tabs value={tab} onValueChange={setTab}>
+            <Tabs value={tab} onValueChange={handleTabChange}>
               <TabsList className="md:hidden mb-3">
                 {['terminal','admin','history'].filter(k => uiConfig.tabs.enabled?.[k] !== false).map(k => (
                   <TabsTrigger key={k} value={k}>{k === 'terminal' ? t.terminal : k === 'admin' ? t.admin : t.history}</TabsTrigger>
