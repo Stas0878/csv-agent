@@ -137,9 +137,19 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
     <div className="fixed inset-0 z-[80] bg-black/40 backdrop-blur flex items-center justify-center">
       <div className="bg-card border rounded-lg shadow-xl w-[880px] max-w-[96vw] p-4">
         <div className="flex items-center justify-between mb-3">
-          <div className="text-sm font-medium flex items-center gap-2">
-            <span className={`inline-block w-2.5 h-2.5 rounded-full ${status.color === 'green' ? 'bg-emerald-500' : status.color === 'yellow' ? 'bg-amber-500' : 'bg-rose-500'}`}></span>
-            <span>Admin Settings</span>
+          <div className="flex items-center gap-3">
+            <BackButton
+              onBack={onClose}
+              canGoBack={true}
+              showText={true}
+              text="Закрыть"
+              variant="ghost"
+              size="sm"
+            />
+            <div className="text-sm font-medium flex items-center gap-2">
+              <span className={`inline-block w-2.5 h-2.5 rounded-full ${status.color === 'green' ? 'bg-emerald-500' : status.color === 'yellow' ? 'bg-amber-500' : 'bg-rose-500'}`}></span>
+              <span>Admin Settings</span>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Button size="sm" variant={config.safeMode ? 'secondary' : 'outline'} onClick={toggleSafeMode}>Safe Mode</Button>
