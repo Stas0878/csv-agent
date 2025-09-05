@@ -247,6 +247,7 @@
 
 ## test_plan:
   current_focus:
+    - "Navigation System with Back Button"
     - "Add embedded preview badge as requested"
     - "Enhance Client Logs Dashboard"
   stuck_tasks: []
