@@ -134,6 +134,13 @@ function App() {
 
   const [openCmd, setOpenCmd] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
+  
+  // Create stable function reference for admin overlay
+  const handleOpenAdmin = useCallback(() => {
+    console.log('Opening admin overlay');
+    setAdminOpen(true);
+  }, []);
+  
   useEffect(() => { const onKey = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setOpenCmd(v => !v); } }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, []);
 
   // Preview state & handlers
