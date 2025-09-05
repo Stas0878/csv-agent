@@ -199,7 +199,15 @@ function App() {
     });
   }, [goBack, toast]);
   
-  useEffect(() => { const onKey = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setOpenCmd(v => !v); } }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, []);
+  // Initialize navigation history with current tab
+  useEffect(() => {
+    pushState({
+      type: 'tab',
+      value: tab,
+      label: tab === 'terminal' ? t.terminal : tab === 'admin' ? t.admin : t.history,
+      isInitial: true
+    });
+  }, []); // Only run once on mount
 
   // Preview state & handlers
   const [previewOpen, setPreviewOpen] = useState(false);
