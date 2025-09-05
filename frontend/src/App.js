@@ -227,15 +227,16 @@ function App() {
     return () => window.removeEventListener('keydown', onKey); 
   }, [canGoBack, handleGoBack]);
 
-  // Preview state & handlers
+  // Preview state & handlers - INLINE PREVIEW instead of new tab
   const [previewOpen, setPreviewOpen] = useState(false);
-  // Force fullscreen preview: always open a new tab with ?embed=1
   const openPreview = () => {
-    try {
-      const u = new URL(window.location.origin + window.location.pathname);
-      u.searchParams.set('embed', '1');
-      window.open(u.toString(), '_blank', 'noopener,noreferrer');
-    } catch (_) {}
+    pushState({
+      type: 'modal',
+      value: 'preview',
+      label: 'Предварительный просмотр',
+      previousTab: tab
+    });
+    setPreviewOpen(true);
   };
 
   // If embed, force-close admin/preview and sidebars
