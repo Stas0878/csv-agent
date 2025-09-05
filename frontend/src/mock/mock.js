@@ -110,6 +110,10 @@ export const tDict = {
     close: "Close",
     stream: "Stream",
     embeddedNote: "Embedded preview is unavailable — use new tab",
+    back: "Back",
+    navigation: "Navigation",
+    goBack: "Go back",
+    currentScreen: "Current screen",
   },
 };
 
