@@ -237,10 +237,7 @@ function App() {
         <AdminOverlay onClose={() => setAdminOpen(false)} config={uiConfig} setConfig={setUiConfig} />
       )}
 
-      {/* Preview Overlay portal: not rendered in embed page */}
-      {!isEmbed && (
-        <PreviewOverlay t={t} open={previewOpen} onClose={() => setPreviewOpen(false)} onSetMode={(m)=> saveToStorage(STORAGE_KEYS.previewMode, m)} placement={uiConfig.preview.placement} />
-      )}
+      {/* Embedded Preview disabled: always open new tab */}
 
       <Toaster />
     </div>
