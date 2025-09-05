@@ -212,8 +212,9 @@ function App() {
 
               {uiConfig.tabs.enabled?.admin !== false && (
                 <TabsContent value="admin" className="m-0 h-full">
-                  <div className="h-full flex flex-col min-h-0 overflow-auto">
+                  <div className="h-full flex flex-col min-h-0 overflow-auto space-y-4">
                     <Dashboard />
+                    <ClientLogs />
                   </div>
                 </TabsContent>
               )}
