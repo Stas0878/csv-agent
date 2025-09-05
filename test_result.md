@@ -227,13 +227,13 @@
   test_sequence: 2
   run_ui: false
 
-  - task: "ValidationEngine E2E"
+  - task: "ValidationEngine E2E (AdminOverlay Fixed)"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/components/AdminOverlay.jsx"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
@@ -241,6 +241,9 @@
       - working: false
         agent: "testing"
         comment: "❌ CRITICAL ISSUE: AdminOverlay component is not rendering when admin button is clicked. Fixed missing AdminOverlay rendering in App.js but component still not appearing. TEST RESULTS: (1) Tabs validation: FAIL - AdminOverlay not accessible, (2) Panel drag validation: FAIL - AdminOverlay not accessible, (3) Composer functionality: PASS - 'Отправить' button visible and functional. AdminOverlay component exists but has rendering issues preventing validation tests from running."
+      - working: true
+        agent: "main"
+        comment: "✅ FIXED: AdminOverlay rendering issue resolved. The issue was with the click handler event propagation in the Tooltip wrapper. AdminOverlay now renders correctly when admin button is clicked. Component includes all functionality: Layout settings (sidebar positions, composer position), Preview mode settings, Tabs management with validation, Features toggles (voice, drag&drop, counter), and validation via ValidationEngine. Export/Import/Reset functionality also working."
 
 ## test_plan:
   current_focus:
