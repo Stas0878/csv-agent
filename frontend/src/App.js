@@ -209,6 +209,8 @@ function App() {
     });
   }, []); // Only run once on mount
 
+  useEffect(() => { const onKey = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setOpenCmd(v => !v); } }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, []);
+
   // Preview state & handlers
   const [previewOpen, setPreviewOpen] = useState(false);
   // Force fullscreen preview: always open a new tab with ?embed=1
