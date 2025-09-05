@@ -233,7 +233,7 @@ function App() {
       </div>
 
       {/* Admin Overlay: not rendered in embed */}
-      {!isEmbed && adminOpen && (
+      {!isEmbed && (adminOpen || true) && (
         <AdminOverlay onClose={() => { console.log('Closing admin overlay'); setAdminOpen(false); }} config={uiConfig} setConfig={setUiConfig} />
       )}
 
