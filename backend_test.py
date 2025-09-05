@@ -493,11 +493,17 @@ class BackendTester:
         # Test 5: History CRUD
         history_success = self.test_history_crud()
         
+        # Test 6: Metrics endpoint
+        metrics_success = self.test_metrics_endpoint()
+        
+        # Test 7: Logs endpoint with query parameters
+        logs_success = self.test_logs_endpoint()
+        
         print("=" * 60)
         print("📊 TEST SUMMARY:")
         
-        total_tests = 5
-        passed_tests = sum([hello_success, agents_success, operations_success, sse_success, history_success])
+        total_tests = 7
+        passed_tests = sum([hello_success, agents_success, operations_success, sse_success, history_success, metrics_success, logs_success])
         
         print(f"Total Tests: {total_tests}")
         print(f"Passed: {passed_tests}")
