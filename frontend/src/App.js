@@ -240,6 +240,12 @@ function App() {
       {!isEmbed && adminOpen && (
         <AdminOverlay onClose={() => setAdminOpen(false)} config={uiConfig} setConfig={setUiConfig} />
       )}
+      {/* DEBUG: Show admin overlay status */}
+      {process.env.NODE_ENV === 'development' && (
+        <div style={{position: 'fixed', top: '10px', right: '10px', background: 'rgba(0,0,0,0.8)', color: 'white', padding: '5px', fontSize: '12px', zIndex: 9999}}>
+          DEBUG: isEmbed={isEmbed.toString()}, adminOpen={adminOpen.toString()}
+        </div>
+      )}
 
       {/* Embedded Preview disabled: always open new tab */}
 
