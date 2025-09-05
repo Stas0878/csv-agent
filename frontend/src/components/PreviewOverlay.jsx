@@ -22,12 +22,14 @@ export default function PreviewOverlay({ t, open, onClose, onSetMode, placement 
 
   const url = useMemo(() => {
     try {
-      const u = new URL(window.location.origin + window.location.pathname);
+      // Build absolute URL including pathname only (no existing search), add embed=1 param
+      const base = window.location.origin + window.location.pathname;
+      const u = new URL(base);
       u.searchParams.set('embed', '1');
       u.searchParams.set('_', String(nonce));
       return u.toString();
     } catch (_) {
-      return window.location.origin + window.location.pathname + `?embed=1&_=${nonce}`;
+      return (window.location.origin || '') + (window.location.pathname || '/') + `?embed=1&_=${nonce}`;
     }
   }, [nonce]);
 
