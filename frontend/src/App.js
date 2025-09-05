@@ -163,8 +163,41 @@ function App() {
   // Create stable function reference for admin overlay
   const handleOpenAdmin = useCallback(() => {
     console.log('Opening admin overlay');
+    // Push admin overlay to navigation history
+    pushState({
+      type: 'modal',
+      value: 'admin',
+      label: 'Настройки администратора',
+      previousTab: tab
+    });
     setAdminOpen(true);
-  }, []);
+  }, [pushState, tab]);
+
+  // Handle back navigation
+  const handleGoBack = useCallback(() => {
+    const result = goBack();
+    if (!result) return;
+
+    const { previous } = result;
+    
+    if (previous.type === 'tab') {
+      setTab(previous.value);
+    } else if (previous.type === 'modal') {
+      if (previous.value === 'admin') {
+        setAdminOpen(false);
+      }
+      // Return to previous tab if specified
+      if (previous.previousTab) {
+        setTab(previous.previousTab);
+      }
+    }
+    
+    toast({
+      title: "Назад",
+      description: `Возвращено к: ${previous.label}`,
+      duration: 2000
+    });
+  }, [goBack, toast]);
   
   useEffect(() => { const onKey = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setOpenCmd(v => !v); } }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, []);
 
