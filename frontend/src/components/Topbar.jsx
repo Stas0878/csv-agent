@@ -104,7 +104,13 @@ export default function Topbar({
             </Tooltip>
           </TooltipProvider>
 
-          <Select value={lang} onValueChange={setLang}>
+          <Select 
+            value={lang} 
+            onValueChange={(newLang) => { 
+              console.log('Language change:', newLang); 
+              setLang(newLang); 
+            }}
+          >
             <SelectTrigger className="w-[110px] h-8" aria-label="Language">
               <Globe2 className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Lang" />
