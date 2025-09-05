@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { validateUIState, validateAction } from "../core/validation/ValidationEngine";
 import { toast } from "../hooks/use-toast";
+import BackButton from "./BackButton";
 
 export default function AdminOverlay({ onClose, config, setConfig }) {
   const [status, setStatus] = useState({ color: 'green', errors: [] });
