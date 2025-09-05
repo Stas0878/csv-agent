@@ -247,9 +247,9 @@
 
 ## test_plan:
   current_focus:
-    - "ValidationEngine E2E"
-  stuck_tasks:
-    - "ValidationEngine E2E"
+    - "Add embedded preview badge as requested"
+    - "Enhance Client Logs Dashboard"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
