@@ -6,7 +6,6 @@ import { toast } from "../hooks/use-toast";
 export default function AdminOverlay({ onClose, config, setConfig }) {
   const [status, setStatus] = useState({ color: 'green', errors: [] });
 
-  // Collect current draggable panel rects for validation (admin open)
   const getPanelsPayload = () => {
     try {
       const ids = [
@@ -14,14 +13,12 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
         { id: 'right', sel: '[data-testid="drag-right"]' },
         { id: 'input', sel: '[data-testid="drag-input"]' },
       ];
-      const rects = ids
-        .map(({ id, sel }) => {
-          const el = document.querySelector(sel);
-          if (!el) return null;
-          const r = el.getBoundingClientRect();
-          return { id, x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) };
-        })
-        .filter(Boolean);
+      const rects = ids.map(({ id, sel }) => {
+        const el = document.querySelector(sel);
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        return { id, x: Math.round(r.left), y: Math.round(r.top), w: Math.round(r.width), h: Math.round(r.height) };
+      }).filter(Boolean);
       const topbar = document.querySelector('[data-testid="topbar"]');
       const critical = [];
       if (topbar) {
@@ -30,9 +27,7 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
       }
       const container = { w: window.innerWidth, h: window.innerHeight };
       return { container, rects, critical };
-    } catch (_) {
-      return undefined;
-    }
+    } catch (_) { return undefined; }
   };
 
   const blockWith = (errors) => {
@@ -94,6 +89,12 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
     const next = { ...config, safeMode: !config.safeMode };
     const res = validateUIState(next);
     if (!res.valid) return blockWith(res.errors || []);
+    try {
+      const root = document.documentElement;
+      const body = document.body;
+      if (next.safeMode) { root.classList.add('safe-mode'); body.classList.add('safe-mode'); }
+      else { root.classList.remove('safe-mode'); body.classList.remove('safe-mode'); }
+    } catch(_){}
     setStatus({ color: 'green', errors: [] });
     setConfig(next);
   };
@@ -119,13 +120,11 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
       setConfig(next);
       setStatus({ color: 'green', errors: [] });
       toast({ title: 'Импорт конфигурации', description: 'Готово' });
-    } catch (e) {
-      blockWith([String(e)]);
-    }
+    } catch (e) { blockWith([String(e)]); }
   };
 
   const resetConfig = () => {
-    const defaults = window.__MMX_DEFAULT_CONFIG__;
+    const defaults = window.MMX_DEFAULT_CONFIG || window.__MMX_DEFAULT_CONFIG__;
     if (!defaults) return blockWith(['Default config not available']);
     const res = validateUIState(defaults);
     if (!res.valid) return blockWith(res.errors || []);
@@ -144,7 +143,7 @@ export default function AdminOverlay({ onClose, config, setConfig }) {
           <div className="flex items-center gap-2">
             <Button size="sm" variant={config.safeMode ? 'secondary' : 'outline'} onClick={toggleSafeMode}>Safe Mode</Button>
             <Button size="sm" variant="outline" onClick={exportConfig}>Export</Button>
-            <label className="inline-flex items-center gap-2 text-xs">
+            <label className="inline-flex items-center gap-2 text-xs cursor-pointer">
               <input type="file" accept="application/json" onChange={(e)=>{ const f=e.target.files&&e.target.files[0]; if (f) importConfig(f); }} />
               Import
             </label>
