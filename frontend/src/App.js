@@ -207,7 +207,7 @@ function App() {
       label: tab === 'terminal' ? t.terminal : tab === 'admin' ? t.admin : t.history,
       isInitial: true
     });
-  }, []); // Only run once on mount
+  }, [pushState, tab, t]); // Add proper dependencies
 
   useEffect(() => { 
     const onKey = (e) => { 
