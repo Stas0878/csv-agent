@@ -141,13 +141,7 @@ function App() {
     setAdminOpen(true);
   }, []);
   
-  // Test: Add a global function to test admin overlay
-  useEffect(() => {
-    window.testAdminOverlay = () => {
-      console.log('Testing admin overlay...');
-      setAdminOpen(true);
-    };
-  }, []);
+  useEffect(() => { const onKey = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setOpenCmd(v => !v); } }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, []);
 
   // Preview state & handlers
   const [previewOpen, setPreviewOpen] = useState(false);
