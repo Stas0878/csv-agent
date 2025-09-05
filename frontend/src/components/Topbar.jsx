@@ -8,6 +8,7 @@ import { Moon, Sun, Globe2, Command, Radio, Eye, Settings } from "lucide-react";
 
 export default function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, panels, setPanels, onOpenCmd, glowMode, setGlowMode, connStatus, onOpenPreview, canOpenPreview = true, onOpenAdmin, customButtons = [] }) {
   const connColor = connStatus === 'open' ? 'bg-emerald-500' : connStatus === 'connecting' ? 'bg-amber-500' : 'bg-rose-500';
+  const showAdmin = typeof onOpenAdmin === 'function';
   return (
     <div className="sticky top-0 z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b" data-testid="topbar">
       <div className="h-14 px-3 md:px-4 flex items-center gap-3 justify-between">
@@ -33,16 +34,18 @@ export default function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, 
             </TooltipProvider>
           )}
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="secondary" size="sm" onClick={onOpenAdmin} aria-label="Admin settings">
-                  <Settings className="w-4 h-4 mr-2" /> {t.admin}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{t.adminSettings}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {showAdmin && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="secondary" size="sm" onClick={onOpenAdmin} aria-label="Admin settings">
+                    <Settings className="w-4 h-4 mr-2" /> {t.admin}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t.adminSettings}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
 
           <TooltipProvider>
             <Tooltip>

@@ -10,3 +10,10 @@ html.safe-mode *, body.safe-mode * {
   animation: none !important;
   scroll-behavior: auto !important;
 }
+
+/* Embed-safe: hide modal overlays and fixed full-screen layers inside iframe preview */
+html.embed-mode body.embed-mode .fixed.inset-0 { display: none !important; }
+html.embed-mode body.embed-mode aside[aria-label="Left sidebar"],
+html.embed-mode body.embed-mode aside[aria-label="Right sidebar"],
+html.embed-mode body.embed-mode .fixed.left-2,
+html.embed-mode body.embed-mode .fixed.right-2 { display: none !important; }

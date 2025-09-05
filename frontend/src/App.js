@@ -22,17 +22,13 @@ import { Separator } from "./components/ui/separator";
 import { ScrollArea } from "./components/ui/scroll-area";
 import { toast } from "./hooks/use-toast";
 import { Toaster } from "./components/ui/toaster";
-import { Moon, Sun, Globe2, ShieldCheck, Database, Settings2, Command, Radio, PanelLeft, PanelRight } from "lucide-react";
 import { getAgents, refreshAgents, patchAgent, getHistory, createHistory, appendOutput } from "./lib/api";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./components/ui/command";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/ui/tooltip";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
 import { connectStream } from "./lib/stream";
 import { AgentsSchema, HistorySchema } from "./lib/schema";
 import AdminOverlay from "./components/AdminOverlay";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import DraggableBlock from "./components/DraggableBlock";
 
 function useTheme() {
   const [theme, setTheme] = useState(loadFromStorage(STORAGE_KEYS.theme, "dark"));
@@ -59,6 +55,11 @@ function App() {
   useEffect(() => { saveToStorage(STORAGE_KEYS.logoGlow, glowMode); }, [glowMode]);
   const [sessionId] = useState(() => { const existing = loadFromStorage("mmx_session", ""); if (existing) return existing; const sid = `s_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`; saveToStorage("mmx_session", sid); return sid; });
 
+  // EMBED-SAFE: detect embed=1 and run in simplified safe mode
+  const isEmbed = useMemo(() => {
+    try { return new URLSearchParams(window.location.search).get('embed') === '1'; } catch { return false; }
+  }, []);
+
   const [agents, setAgents] = useState([]);
   const [selectedAgentId, setSelectedAgentId] = useState(loadFromStorage(STORAGE_KEYS.selectedAgent, "agent-01"));
   useEffect(() => { saveToStorage(STORAGE_KEYS.selectedAgent, selectedAgentId); }, [selectedAgentId]);
@@ -77,10 +78,8 @@ function App() {
     custom: { buttons: [] },
     safeMode: false,
   };
-  // expose default config for AdminOverlay Reset
   useEffect(() => { window.MMX_DEFAULT_CONFIG = defaultConfig; window.__MMX_DEFAULT_CONFIG__ = defaultConfig; }, [glowMode]);
 
-  // Sanitize ui config
   const sanitizeConfig = (cfg) => {
     try {
       const order = Array.isArray(cfg?.tabs?.order) ? cfg.tabs.order.filter(Boolean) : ['terminal','admin','history'];
@@ -94,10 +93,17 @@ function App() {
 
   const [uiConfig, setUiConfig] = useState(sanitizeConfig(loadFromStorage(STORAGE_KEYS.uiConfig, defaultConfig)));
   useEffect(() => { saveToStorage(STORAGE_KEYS.uiConfig, uiConfig); }, [uiConfig]);
-  // Apply safe mode class
+
+  // Apply safe mode and embed-mode classes
   useEffect(() => {
-    try { const root = document.documentElement; const body = document.body; if (uiConfig.safeMode) { root.classList.add('safe-mode'); body.classList.add('safe-mode'); } else { root.classList.remove('safe-mode'); body.classList.remove('safe-mode'); } } catch(_){}
-  }, [uiConfig.safeMode]);
+    try {
+      const root = document.documentElement; const body = document.body;
+      if (uiConfig.safeMode || isEmbed) { root.classList.add('safe-mode'); body.classList.add('safe-mode'); }
+      else { root.classList.remove('safe-mode'); body.classList.remove('safe-mode'); }
+      if (isEmbed) { root.classList.add('embed-mode'); body.classList.add('embed-mode'); }
+      else { root.classList.remove('embed-mode'); body.classList.remove('embed-mode'); }
+    } catch(_){}
+  }, [uiConfig.safeMode, isEmbed]);
 
   const [leftOpen, setLeftOpen] = useState(loadFromStorage(STORAGE_KEYS.leftOpen, true));
   const [rightOpen, setRightOpen] = useState(loadFromStorage(STORAGE_KEYS.rightOpen, false));
@@ -111,7 +117,7 @@ function App() {
   }, []);
 
   useEffect(() => { (async () => {
-    try { const a = await getAgents(); const safe = AgentsSchema.safeParse(a); if (safe.success) setAgents(safe.data); else toast({ title: "Agents", description: "Invalid data" }); } catch(e){ /* ignore */ }
+    try { const a = await getAgents(); const safe = AgentsSchema.safeParse(a); if (safe.success) setAgents(safe.data); } catch(e){ /* ignore */ }
     try { const h = await getHistory(); const safeH = HistorySchema.safeParse(h); if (safeH.success) setHistory(safeH.data); } catch(e){}
   })(); }, []);
 
@@ -127,27 +133,32 @@ function App() {
   const handleSaveHistory = async (content) => { try { const item = await createHistory({ agentId: selectedAgentId, content }); setHistory(prev => [item, ...prev].slice(0,100)); } catch(e){} };
 
   const [openCmd, setOpenCmd] = useState(false);
-  // FIX: missing adminOpen state caused runtime crash
   const [adminOpen, setAdminOpen] = useState(false);
   useEffect(() => { const onKey = (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setOpenCmd(v => !v); } }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, []);
 
   // Preview state & handlers
   const [previewOpen, setPreviewOpen] = useState(false);
-  const openPreview = () => { setPreviewOpen(true); };
+  const openPreview = () => { if (!isEmbed) setPreviewOpen(true); };
+
+  // If embed, force-close admin/preview and sidebars
+  useEffect(() => {
+    if (isEmbed) { setPreviewOpen(false); setAdminOpen(false); setLeftOpen(false); setRightOpen(false); }
+  }, [isEmbed]);
 
   return (
     <DndProvider backend={HTML5Backend}>
     <div className="w-screen h-screen overflow-hidden bg-gradient-to-b from-background to-background/60 text-foreground">
       <div className="flex h-full">
-        {/* Desktop left sidebar */}
-        {leftOpen && !isNarrow && !uiConfig.layout.swapSidebars && (
+        {/* Left sidebar hidden in embed */}
+        {leftOpen && !isNarrow && !isEmbed && (
           <div className="hidden lg:block h-full">
             <MegaSidebar t={t} agents={agents} selectedAgentId={selectedAgentId} onSelectAgent={setSelectedAgentId} onToggleAgent={handleToggleAgent} onRefresh={handleRefreshStatuses} glowMode={uiConfig.effects.glowMode} onCollapse={() => setLeftOpen(false)} />
           </div>
         )}
-        {/* Main content area */}
+
+        {/* Main content */}
         <div className="flex-1 min-w-0 min-h-0 flex flex-col">
-          <Topbar t={t} theme={theme} setTheme={setTheme} lang={lang} setLang={(l)=>{ setLang(l); saveToStorage(STORAGE_KEYS.lang, l); }} adminLevel={adminLevel} setAdminLevel={setAdminLevel} panels={panels} setPanels={setPanels} onOpenCmd={()=>setOpenCmd(true)} glowMode={uiConfig.effects.glowMode} setGlowMode={(m)=> setUiConfig(prev => ({ ...prev, effects: { ...prev.effects, glowMode: m } }))} connStatus={connStatus} onOpenPreview={openPreview} canOpenPreview={true} onOpenAdmin={()=> setAdminOpen(true)} customButtons={uiConfig.custom.buttons} />
+          <Topbar t={t} theme={theme} setTheme={setTheme} lang={lang} setLang={(l)=>{ setLang(l); saveToStorage(STORAGE_KEYS.lang, l); }} adminLevel={adminLevel} setAdminLevel={setAdminLevel} panels={panels} setPanels={setPanels} onOpenCmd={()=>setOpenCmd(true)} glowMode={uiConfig.effects.glowMode} setGlowMode={(m)=> setUiConfig(prev => ({ ...prev, effects: { ...prev.effects, glowMode: m } }))} connStatus={connStatus} onOpenPreview={openPreview} canOpenPreview={!isEmbed} onOpenAdmin={!isEmbed ? ()=> setAdminOpen(true) : undefined} customButtons={!isEmbed ? uiConfig.custom.buttons : []} />
 
           <div className="flex-1 min-h-0 overflow-hidden p-3 md:p-4">
             <Tabs value={tab} onValueChange={setTab}>
@@ -189,31 +200,6 @@ function App() {
                 <TabsContent value="admin" className="m-0 h-full">
                   <div className="h-full flex flex-col min-h-0 overflow-auto">
                     <Dashboard />
-                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mt-4">
-                      <div className="xl:col-span-2"><AdminPanel t={t} adminLevel={adminLevel} /></div>
-                      <div className="xl:col-span-1">
-                        <Card className="bg-card/70">
-                          <CardHeader className="pb-2 sticky top-0 z-10 bg-card/80"><CardTitle className="text-base">{t.agents}</CardTitle></CardHeader>
-                          <Separator />
-                          <CardContent className="pt-3">
-                            <ScrollArea className="h-[520px] pr-2">
-                              {agents.map(a => (
-                                <div key={a.id} className="flex items-center justify-between py-2 border-b last:border-b-0">
-                                  <div className="text-sm flex items-center gap-2">
-                                    <span className={`inline-block w-2.5 h-2.5 rounded-full ${a.status === 'online' ? 'bg-emerald-500' : a.status === 'broken' ? 'bg-rose-500' : 'bg-zinc-400'}`}></span>
-                                    <span className="font-medium">{a.name}</span>
-                                    {a.ai && <span className="text-[10px] px-1 py-0.5 rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">AI</span>}
-                                    <span className="text-xs text-muted-foreground capitalize">{a.status}</span>
-                                  </div>
-                                  <Switch checked={a.enabled} onCheckedChange={(v) => handleToggleAgent(a.id, v)} />
-                                </div>
-                              ))}
-                            </ScrollArea>
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </div>
-                    <div className="mt-4"><ClientLogs /></div>
                   </div>
                 </TabsContent>
               )}
@@ -231,21 +217,23 @@ function App() {
           </div>
         </div>
 
-        {/* Right sidebar */}
-        {rightOpen && !isNarrow && !uiConfig.layout.swapSidebars && (
+        {/* Right sidebar hidden in embed */}
+        {rightOpen && !isNarrow && !isEmbed && (
           <div className="hidden lg:block h-full">
             <RightSidebar t={t} agents={agents} selectedAgentId={selectedAgentId} onSelectAgent={setSelectedAgentId} onToggleAgent={handleToggleAgent} onRefresh={handleRefreshStatuses} glowMode={uiConfig.effects.glowMode} onCollapse={() => setRightOpen(false)} />
           </div>
         )}
       </div>
 
-      {/* Admin Overlay */}
-      {adminOpen && (
+      {/* Admin Overlay: not rendered in embed */}
+      {!isEmbed && adminOpen && (
         <AdminOverlay onClose={() => setAdminOpen(false)} config={uiConfig} setConfig={setUiConfig} />
       )}
 
-      {/* Internal Preview Overlay (portal) */}
-      <PreviewOverlay t={t} open={previewOpen} onClose={() => setPreviewOpen(false)} onSetMode={(m)=> saveToStorage(STORAGE_KEYS.previewMode, m)} placement={uiConfig.preview.placement} />
+      {/* Preview Overlay portal: not rendered in embed page */}
+      {!isEmbed && (
+        <PreviewOverlay t={t} open={previewOpen} onClose={() => setPreviewOpen(false)} onSetMode={(m)=> saveToStorage(STORAGE_KEYS.previewMode, m)} placement={uiConfig.preview.placement} />
+      )}
 
       <Toaster />
     </div>
