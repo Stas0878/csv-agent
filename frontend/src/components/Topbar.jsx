@@ -49,7 +49,17 @@ export default function Topbar({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="secondary" size="sm" onClick={onOpenPreview} aria-label="Open preview">
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Preview button clicked');
+                        onOpenPreview();
+                      }} 
+                      aria-label="Open preview"
+                    >
                       <Eye className="w-4 h-4 mr-2" /> {t.preview}
                     </Button>
                   </TooltipTrigger>
