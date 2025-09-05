@@ -5,8 +5,13 @@ import { Slider } from "./ui/slider";
 import { Separator } from "./ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { Moon, Sun, Globe2, Command, Radio, Eye, Settings, Info } from "lucide-react";
+import BackButton from "./BackButton";
 
-export default function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, panels, setPanels, onOpenCmd, glowMode, setGlowMode, connStatus, onOpenPreview, canOpenPreview = true, onOpenAdmin, customButtons = [] }) {
+export default function Topbar({ 
+  t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, panels, setPanels, 
+  onOpenCmd, glowMode, setGlowMode, connStatus, onOpenPreview, canOpenPreview = true, 
+  onOpenAdmin, customButtons = [], canGoBack = false, onGoBack, currentState 
+}) {
   const connColor = connStatus === 'open' ? 'bg-emerald-500' : connStatus === 'connecting' ? 'bg-amber-500' : 'bg-rose-500';
   const showAdmin = typeof onOpenAdmin === 'function';
   return (
