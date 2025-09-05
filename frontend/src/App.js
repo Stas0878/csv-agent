@@ -12,6 +12,7 @@ import Topbar from "./components/Topbar";
 import AdminPanel from "./components/AdminPanel";
 import HistoryPanel from "./components/HistoryPanel";
 import PreviewOverlay from "./components/PreviewOverlay";
+import BackButton from "./components/BackButton";
 import { tDict, LANG, STORAGE_KEYS, loadFromStorage, saveToStorage } from "./mock/mock";
 import { Button } from "./components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
@@ -29,6 +30,7 @@ import { AgentsSchema, HistorySchema } from "./lib/schema";
 import AdminOverlay from "./components/AdminOverlay";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { useNavigationHistory } from "./hooks/useNavigationHistory";
 
 function useTheme() {
   const [theme, setTheme] = useState(loadFromStorage(STORAGE_KEYS.theme, "dark"));
