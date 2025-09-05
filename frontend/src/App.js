@@ -363,7 +363,10 @@ function App() {
         <AdminOverlay onClose={() => { console.log('Closing admin overlay'); setAdminOpen(false); }} config={uiConfig} setConfig={setUiConfig} />
       )}
 
-      {/* Embedded Preview disabled: always open new tab */}
+      {/* INLINE Preview Overlay - restored functionality */}
+      {!isEmbed && previewOpen && (
+        <PreviewOverlay onClose={() => { setPreviewOpen(false); }} />
+      )}
 
       <Toaster />
     </div>
