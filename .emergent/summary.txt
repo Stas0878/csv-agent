@@ -1,79 +1,74 @@
 <analysis>
-The trajectory details the development of MegaMind_X, a full-stack application with a React frontend, FastAPI backend, and MongoDB. The AI engineer started with an initial request for both a Streamlit and a React UI, prioritizing the React frontend based on the  replication style. Key challenges included frequent white screen errors due to missing component definitions or imports during structural changes, which were eventually mitigated by implementing an ErrorBoundary and robust state management. The development progressed from a mock-data frontend to a fully integrated backend with SSE/WebSockets, extensive UI enhancements (dynamic logo, command palette, dashboard, dual sidebars), and a separate Streamlit component. The AI demonstrated strong problem-solving, iteratively refining features, and proactively implementing robustness measures like Zod validation, client-side logging, and Playwright E2E tests. The AI also successfully navigated user clarifications, language switches, and addressed specific design and functionality requests, culminating in a highly interactive and resilient MVP.
+The trajectory chronicles the development of MegaMind_X, a full-stack application leveraging React, FastAPI, and MongoDB. The previous AI engineer initiated the project, building from a  inspiration to a robust MVP. Key early challenges included frequent UI crashes due to missing definitions, addressed by implementing  and  validation. The development progressed through extensive UI/UX enhancements like adaptive layouts, dynamic sidebars, and a sophisticated . A significant phase involved implementing a  with Framer Motion animations and an  for UI customization, featuring  for draggable panels and a custom . Persistent debugging loops arose from Something went wrong errors, particularly with the  and  rendering, often linked to incorrect DOM structure, missing state declarations, or localization keys. Ultimately, the black screen in the platform's preview window was identified as an external iframe embedding restriction. The AI engineer demonstrated iterative problem-solving, proactively adding robustness, and adapting to user feedback and debugging.
 </analysis>
 
 <product_requirements>
-The primary goal is to develop MegaMind_X, an adaptive web interface primarily inspired by , with React + Tailwind CSS, FastAPI backend, and MongoDB. A secondary goal emerged to create a compatible Streamlit + Python interface.
-
-Key functional requirements:
-- **UI:** Multi-level menus, toggleable tabs, smooth panel/modal animations, hover/click effects on buttons. A distinct logo for MegaMind_X with specific animations, glow, and left skew. Support for light/dark themes and RU/EN language toggles. Full adaptability for desktop, tablet, and mobile.
-- **Sidebars:** Initially, a left sidebar with 25 agents, status indicators (online/broken/idle), mini-toggles, and a Refresh Statuses button. Later, a second identical right sidebar was requested, both with Collapse/Expand functionality.
-- **Main Content:** A terminal output panel for ready products (code, interfaces, texts) with capabilities to view, edit, download, save, share, and auto-update via SSE/WebSockets. An InputComposer component with adaptive text area, voice input (RU/EN), file upload/preview/validation, and submit/clear buttons. A Mini-Dashboard for agent metrics.
-- **Settings:** Theme (moon/sun icon), Language (globe icon, RU/EN), Admin access slider.
-- **Data Persistence:** localStorage for UI state (theme, language, selected agent, panels, terminal content, history). Backend to use TinyDB or SQLite for agent statuses, request/result history.
-- **Robustness:** ErrorBoundary for UI, reliable SSE/WS stream connector with retry logic, skeletons for loading states, Zod validation for API responses, client-side error logger, and Playwright E2E tests.
-- **Extensibility:** Structured, modular code for easy integration with external APIs and future expansion (e.g., more agents, React/Vue frontends).
-- **Streamlit Component:** A standalone adaptive text input module with voice (RU/EN), file handling, symbol count, and dynamic resizing.
-- **Aesthetics:** Primary accent color is Teal/Cyan, minimalistic design with rich colors, mild gradients, micro-animations, shadows, and appropriate use of Shadcn UI components.
+The primary objective is to build MegaMind_X, an adaptive web interface inspired by , using React, Tailwind CSS, FastAPI, and MongoDB. A secondary goal is a compatible Streamlit component. The UI needs multi-level menus, toggleable tabs, smooth animations, a distinct animated logo, theme/language toggles, and full adaptability. Sidebars (initially left, then right) display 25 agents with status indicators and collapse/expand functionality. The main content includes a terminal for ready products with SSE/WebSockets, an  (adaptive text, voice RU/EN, file upload/preview/validation), and a Mini-Dashboard. Settings cover theme, language, and admin access. Data persists via  (UI state) and MongoDB (backend data). Robustness is crucial, with , reliable SSE/WS, Zod validation, client-side logging, and Playwright E2E tests. The Streamlit component needs adaptive text input with voice and file handling. Aesthetic guidelines emphasize Teal/Cyan accents, minimalism, gradients, micro-animations, and Shadcn UI.
 </product_requirements>
 
 <key_technical_concepts>
-- **Frontend:** React, Tailwind CSS, Shadcn UI components, ,  for API calls,  for state.
-- **Backend:** FastAPI,  (AsyncIOMotorClient) for MongoDB, , .
-- **Communication:** Server-Sent Events (SSE) and WebSockets for real-time data streaming.
-- **Testing:** Playwright for E2E frontend testing,  for backend.
-- **Robustness:**  for React,  for schema validation, custom client-side logger.
-- **Python UI:**  with  for custom HTML/JS.
+- **Frontend**: React, Tailwind CSS, Shadcn UI, , , , , , , custom .
+- **Backend**: FastAPI,  (MongoDB), , .
+- **Communication**: Server-Sent Events (SSE), WebSockets.
+- **Testing**: Playwright (E2E), .
+- **Robustness**: ,  schema validation, client-side logger.
+- **Python UI**: .
 </key_technical_concepts>
 
 <code_architecture>
 
 
--   **/app/frontend/src/App.js**: The main React application entry point. It orchestrates the layout, including Topbar, MegaSidebar (left), RightSidebar, and the main content area (Dashboard, TerminalPanel, AdminPanel, HistoryPanel, ClientLogs). It manages global state for theme, language, panel visibility, and integrates various components. It was frequently updated to fix component rendering issues and integrate new features.
--   **/app/backend/server.py**: The FastAPI backend entry point. It defines API routes (, , , , , ) and connects to MongoDB. It handles CRUD operations for agents and history, manages output streaming (SSE/WS), and now includes a client-side error logger.
--   **/app/frontend/src/mock/mock.js**: Stores mock data and utility functions for  persistence and mock API calls. Critical for initial frontend development and continued state management. It was expanded to export many utility functions and .
--   **/app/contracts.md**: Documents API contracts, mocked data, backend implementation plans, and frontend-backend integration details. Acts as a protocol for full-stack development.
--   **/app/frontend/src/components/BrandLogo.jsx**: The component responsible for rendering the MegaMind_X logo. It implements the left skew, animation on load, glow effect on hover, and an optional parallax effect. Its properties were refined iteratively.
--   **/app/frontend/src/components/MegaSidebar.jsx**: The main left sidebar, displaying agent list, status indicators, and toggles. It now includes a collapse/expand button, whose position was adjusted.
--   **/app/frontend/src/components/RightSidebar.jsx**: A newly added right sidebar, mirroring the functionality of the left sidebar for agents, statuses, and toggles, also with collapse/expand.
--   **/app/frontend/src/components/InputComposer.jsx**: The adaptive text input component. It incorporates voice input (RU/EN), file upload with preview and validation, submit/clear buttons, and character count. Its internal layout was adjusted to move controls below the text area.
--   **/app/frontend/src/components/ErrorBoundary.jsx**: A React Error Boundary component. It catches rendering errors within its children and displays a fallback UI instead of a white screen, enhancing application stability.
--   **/app/frontend/src/lib/stream.js**: Manages the SSE/WebSocket connection for real-time output. It includes auto-reconnection logic with exponential backoff and connection status indicators for robustness.
--   **/app/frontend/src/lib/clientLogger.js**: Implements client-side error logging. It captures browser errors and console messages, buffers them, and sends them in batches to the backend's  endpoint.
--   **/app/frontend/src/lib/schema.js**: Defines Zod schemas for validating API responses (e.g., , ) before rendering, preventing UI crashes from malformed data.
--   **/app/streamlit/mmx_streamlit_input.py**: A standalone Streamlit component providing an adaptive text area with voice input, file handling, and dynamic resizing, designed for integration into Streamlit applications.
--   **/app/tests/e2e/**: Contains Playwright E2E test files (, , , , ) to verify UI functionality, resilience, and error handling.
+-   ****: Main React entry point. Manages layout, global state, renders Topbar, Sidebars, main content (Tabs for Terminal, Admin, History). Extensively modified for adaptive layout,  integration,  rendering,  context,  interaction,  context, and state management for UI elements. Critical for orchestrating the entire UI and its dynamic behavior.
+-   ****: FastAPI backend for API routes (, , , , , ). Connects to MongoDB, handles CRUD, SSE/WS streaming, and client-side logging. No recent changes.
+-   ****: Mock data,  utilities (, ), and . Expanded to store UI configuration (), preview mode (), and validation logs (). Important for persistent UI state.
+-   ****: Top application bar. Displays BrandLogo, navigation buttons, theme/language toggles, and newly added Preview and Admin buttons. It's now conditionally rendered and interacts with global state for opening overlays.
+-   ****: A new component for displaying an interactive live preview of the application. Initially attempted as an overlay with Framer Motion, it evolved to support device presets and was eventually forced to open in a new tab due to external iframe embedding restrictions. Renders content in an iframe and provides controls (open new tab, refresh, share, close). Utilizes  for isolated rendering.
+-   ****: New component, originally , for administrative UI settings. Implements controls for sidebar positions, InputComposer position, preview mode, visual effects (glow, parallax), feature toggles (voice, drag&drop, counter), and custom buttons/tabs. Integrates with  to block invalid actions. It also supports Export/Import/Reset of .
+-   ****: New custom React hook for managing positions of draggable UI elements. Persists positions in  and provides functions to update them.
+-   ****: New component, a wrapper for any UI element that needs to be draggable. Utilizes  to enable drag-and-drop functionality, and integrates with  to validate new positions.
+-   ****: New module (initially TypeScript, converted to JS) that provides  and  functions. Contains logic to enforce UI consistency, such as minimum active tabs, no duplicate tabs, protecting system tabs, panel boundary checks, and preventing critical zone overlaps (e.g., Topbar). Logs invalid actions to .
+-   ****: Global CSS, includes Tailwind directives and specific styles for  (to hide elements in iframe context) and  (to disable animations).
+-   ****, ****, ****: New/modified Playwright E2E tests covering adaptive layout, PreviewOverlay functionality (URL, content rendering, controls), and  rules (tab management, panel movement, feature toggles).
+
 </code_architecture>
 
 <pending_tasks>
-- Streamlit fallback package: Full integration of the standalone Streamlit component into the main React application (beyond just providing a demo). The plan for a blessed compatible Streamlit package that can run autonomously or connect to the React/FastAPI backend via API is still pending.
-- Further Streamlit enhancements: Drag-and-drop support for files in the Streamlit component, hotkeys for microphone.
-- Advanced logo effects: More sophisticated parallax for the logo, 3-step glow modes beyond the current soft/medium/strong selector.
-- Client Logs Dashboard: Further UI enhancements to the client logs display in the Admin Panel (e.g., more advanced filters/search).
+-   Full integration of the standalone Streamlit component into the main React application.
+-   Streamlit enhancements: Drag-and-drop support for files, hotkeys for microphone.
+-   Advanced logo effects: More sophisticated parallax, 3-step glow modes beyond current.
+-   Client Logs Dashboard UI enhancements (advanced filters/search).
+-   Further E2E tests for ValidationEngine: specific scenarios for panel overlaps and bounds.
+-   Visual editor for layout: snap-to-grid, guides/magnets, lock panels, undo/redo.
+-   DnD for tabs instead of ↑/↓ buttons.
+-   InputComposer improvements: templates/presets, hotkeys, file upload progress, recent attachments.
+-   Command palette for quick actions.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was addressing UI layout and functionality adjustments based on user feedback. The core work involved refining the visual and interactive elements of the MegaMind_X interface.
+Immediately before this summary request, the AI engineer was deep in a debugging loop concerning the Preview functionality. The primary issue was a black screen or a dark, semi-transparent overlay appearing when attempting to use the in-app preview.
 
-Specifically:
-1.  **InputComposer Controls Relocation:** The buttons and controls related to file uploads, voice input (RU/EN language selection), and the Send button were moved from alongside the text input field to *below* it within the  component. This improves the visual flow and user experience of the text input area.
-2.  **Sidebar Collapse/Expand Button Repositioning:**
-    *   For the  (left panel), the collapse button was moved to the top header of the panel. When collapsed, a small expand button appears at the left edge of the screen.
-    *   For the newly introduced , a collapse button was also placed in its top header. When collapsed, an expand button appears at the right edge of the screen.
-    Both sidebars now have consistent collapse/expand mechanics with state persistence in .
-3.  **ESLint Fix:** An ESLint warning regarding missing  attributes for image previews within  was resolved, ensuring code quality.
+The AI engineer made several attempts to fix this:
+1.  **DOM Structure Fixes**: Corrected erroneous  placements within  components in  to prevent React rendering errors and  triggers.
+2.  **PreviewOverlay Simplification**: Iteratively removed  animations and  from , aiming for a simpler, more stable render.
+3.  **Embed-Safe Mode**: Implemented a conditional  check in  (for URLs with ) to render a minimalist UI within the iframe: hiding , , sidebars, and Topbar controls, and disabling network calls to ensure a barebones, stable render.
+4.  ** State**: Discovered and fixed a  where  state was used but not declared in , which caused global application failure.
+5.  **Localization Key**: Identified and added a missing  key to the localization dictionaries () which was causing  to trigger.
+6.  ** Normalization**: Added logic to sanitize  on load to prevent crashes from corrupted  state.
 
-The application now features:
-*   Two fully functional, collapsible side panels (left and right) with agent lists, status indicators, and toggles.
-*   A dynamic  with left skew, animated appearance, adjustable glow (soft/medium/strong), and optional parallax.
-*   A robust  in the terminal tab, featuring an adaptive text area, voice input with language selection, file upload/preview/validation, and persistent state.
-*   Terminal with SSE/WS streaming, history, command palette, toast notifications, and a mini-Dashboard with metrics.
-*   Enhanced stability through , reliable stream reconnection, skeletons, Zod validation, and client-side logging.
-*   A comprehensive suite of Playwright E2E tests, ready for CI integration.
+Despite these efforts, the black screen persisted specifically in the *platform's integrated preview window*. It was finally diagnosed as an external issue: the platform's infrastructure likely enforced  or  headers, preventing the application from being embedded in an iframe. The UI *did* work correctly when opened in a new browser tab with .
 
-The *Streamlit* component () exists as a separate, standalone module and is not integrated into the React application's preview or runtime environment.
+The current state of the application is:
+*   The primary interface loads without crashes.
+*   The Preview button in the Topbar now *only* opens the application in a new browser tab with the  parameter, circumventing the platform's iframe restriction.
+*   The  exists, with features for UI configuration,  based drag-and-drop (for *copies* of panels, not the live ones, in admin mode), and the  for enforcing rules.
+*    for tabs, features, and panel boundary checks is integrated.
+*    and  functionalities are in place within the .
+*   The  correctly opens, and its UI elements and validation logic function as intended.
+
+The  mode and related CSS () are in place to ensure that when the app *does* open in a new tab with , it displays a clean, minimal UI.
+
 </current_work>
 
 <optional_next_step>
-The next step is to make the MegaMind_X interface adaptive to screen size, ensuring panel and main content containers fill the viewport, with internal scrolling for content and fixed-width sidebars.
+Add an explanatory badge in the Topbar: Embedded недоступен — используйте новую вкладку.
 </optional_next_step>

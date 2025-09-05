@@ -14,7 +14,7 @@ from datetime import datetime
 import sys
 
 # Backend URL from environment
-BACKEND_URL = "https://aichat-hub-6.preview.emergentagent.com/api"
+BACKEND_URL = "https://megamind-x.preview.emergentagent.com/api"
 
 class BackendTester:
     def __init__(self):
