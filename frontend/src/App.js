@@ -122,10 +122,10 @@ function App() {
   })(); }, []);
 
   const [connStatus, setConnStatus] = useState('connecting');
-  useEffect(() => { const conn = connectStream({ sessionId, onMessage: (payload) => {
+  useEffect(() => { if (isEmbed) return; const conn = connectStream({ sessionId, onMessage: (payload) => {
     if (payload?.type === 'output' && payload.data?.content) {
       const line = payload.data.content; const ta = document.querySelector('textarea'); if (ta) { const next = (ta.value ? ta.value + "\n" : "") + line; ta.value = next; saveToStorage(STORAGE_KEYS.terminal, next); }
-    }}, onStatusChange: setConnStatus }); return () => conn.close(); }, [sessionId]);
+    }}, onStatusChange: setConnStatus }); return () => conn.close(); }, [sessionId, isEmbed]);
 
   const refreshing = useRef(false);
   const handleRefreshStatuses = async () => { if (refreshing.current) return; refreshing.current = true; try { await refreshAgents(); const a = await getAgents(); const safe = AgentsSchema.safeParse(a); if (safe.success) setAgents(safe.data); toast({ title: t.refresh, description: "OK" }); } catch(e){ toast({ title: t.refresh, description: "Failed" }); } finally { setTimeout(()=> refreshing.current=false, 600);} };
