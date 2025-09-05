@@ -17,9 +17,27 @@ export default function Topbar({
   return (
     <div className="sticky top-0 z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b" data-testid="topbar">
       <div className="h-14 px-3 md:px-4 flex items-center gap-3 justify-between">
-        <div className="flex items-center gap-2">
-          <span className={`inline-block w-2.5 h-2.5 rounded-full ${connColor}`} aria-label={`Connection ${connStatus}`}></span>
-          <span className="text-xs text-muted-foreground hidden sm:inline">{t.stream}: {connStatus}</span>
+        <div className="flex items-center gap-3">
+          {/* Back Button */}
+          <BackButton
+            canGoBack={canGoBack}
+            onBack={onGoBack}
+            showText={false}
+            className="mr-1"
+          />
+          
+          {/* Connection Status */}
+          <div className="flex items-center gap-2">
+            <span className={`inline-block w-2.5 h-2.5 rounded-full ${connColor}`} aria-label={`Connection ${connStatus}`}></span>
+            <span className="text-xs text-muted-foreground hidden sm:inline">{t.stream}: {connStatus}</span>
+          </div>
+          
+          {/* Current Navigation State Indicator */}
+          {currentState && (
+            <div className="hidden md:flex items-center gap-1 text-xs text-muted-foreground bg-accent/20 px-2 py-1 rounded">
+              <span>{currentState.label}</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {customButtons.map(btn => (
