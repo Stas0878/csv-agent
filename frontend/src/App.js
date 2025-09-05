@@ -172,7 +172,7 @@ function App() {
 
         {/* Main content */}
         <div className="flex-1 min-w-0 min-h-0 flex flex-col">
-          <Topbar t={t} theme={theme} setTheme={setTheme} lang={lang} setLang={(l)=>{ setLang(l); saveToStorage(STORAGE_KEYS.lang, l); }} adminLevel={adminLevel} setAdminLevel={setAdminLevel} panels={panels} setPanels={setPanels} onOpenCmd={()=>setOpenCmd(true)} glowMode={uiConfig.effects.glowMode} setGlowMode={(m)=> setUiConfig(prev => ({ ...prev, effects: { ...prev.effects, glowMode: m } }))} connStatus={connStatus} onOpenPreview={openPreview} canOpenPreview={!isEmbed} onOpenAdmin={!isEmbed ? () => { console.log('Setting adminOpen to true'); setAdminOpen(true); } : undefined} customButtons={!isEmbed ? uiConfig.custom.buttons : []} />
+          <Topbar t={t} theme={theme} setTheme={setTheme} lang={lang} setLang={(l)=>{ setLang(l); saveToStorage(STORAGE_KEYS.lang, l); }} adminLevel={adminLevel} setAdminLevel={setAdminLevel} panels={panels} setPanels={setPanels} onOpenCmd={()=>setOpenCmd(true)} glowMode={uiConfig.effects.glowMode} setGlowMode={(m)=> setUiConfig(prev => ({ ...prev, effects: { ...prev.effects, glowMode: m } }))} connStatus={connStatus} onOpenPreview={openPreview} canOpenPreview={!isEmbed} onOpenAdmin={!isEmbed ? handleOpenAdmin : undefined} customButtons={!isEmbed ? uiConfig.custom.buttons : []} />
 
           <div className="flex-1 min-h-0 overflow-hidden p-3 md:p-4">
             <Tabs value={tab} onValueChange={setTab}>
