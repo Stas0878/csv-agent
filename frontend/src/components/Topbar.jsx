@@ -86,7 +86,17 @@ export default function Topbar({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant="ghost" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme">
+                <Button 
+                  size="icon" 
+                  variant="ghost" 
+                  onClick={(e) => { 
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
+                    console.log('Theme toggle clicked, current theme:', theme);
+                    setTheme(theme === 'dark' ? 'light' : 'dark'); 
+                  }} 
+                  aria-label="Toggle theme"
+                >
                   {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                 </Button>
               </TooltipTrigger>
