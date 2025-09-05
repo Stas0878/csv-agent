@@ -45,11 +45,9 @@ export default function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, 
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="secondary" size="sm" onClick={() => { 
-                    console.log('Admin button clicked!', typeof onOpenAdmin, onOpenAdmin); 
-                    if (typeof onOpenAdmin === 'function') {
+                    console.log('Admin button clicked!'); 
+                    if (onOpenAdmin) {
                       onOpenAdmin();
-                    } else {
-                      console.error('onOpenAdmin is not a function:', onOpenAdmin);
                     }
                   }} aria-label="Admin settings">
                     <Settings className="w-4 h-4 mr-2" /> {t.admin}
