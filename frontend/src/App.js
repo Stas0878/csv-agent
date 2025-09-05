@@ -71,7 +71,27 @@ function App() {
   const [panels, setPanels] = useState(loadFromStorage(STORAGE_KEYS.panels, { terminal: true, admin: true, history: true }));
   useEffect(() => { saveToStorage(STORAGE_KEYS.panels, panels); }, [panels]);
   const [tab, setTab] = useState(panels.terminal ? "terminal" : panels.admin ? "admin" : "history");
-  useEffect(() => { if (!panels[tab]) { const next = panels.terminal ? "terminal" : panels.admin ? "admin" : "history"; setTab(next); } }, [panels, tab]);
+  
+  // Enhanced tab change with navigation history
+  const handleTabChange = useCallback((newTab) => {
+    if (newTab !== tab) {
+      // Push current tab to navigation history
+      pushState({
+        type: 'tab',
+        value: newTab,
+        label: newTab === 'terminal' ? t.terminal : newTab === 'admin' ? t.admin : t.history,
+        previousTab: tab
+      });
+      setTab(newTab);
+    }
+  }, [tab, pushState, t]);
+  
+  useEffect(() => { 
+    if (!panels[tab]) { 
+      const next = panels.terminal ? "terminal" : panels.admin ? "admin" : "history"; 
+      handleTabChange(next);
+    } 
+  }, [panels, tab, handleTabChange]);
   const [history, setHistory] = useState([]);
 
   const defaultConfig = {
