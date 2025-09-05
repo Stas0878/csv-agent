@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Slider } from "./ui/slider";
 import { Separator } from "./ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
-import { Moon, Sun, Globe2, Command, Radio, Eye, Settings } from "lucide-react";
+import { Moon, Sun, Globe2, Command, Radio, Eye, Settings, Info } from "lucide-react";
 
 export default function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, setAdminLevel, panels, setPanels, onOpenCmd, glowMode, setGlowMode, connStatus, onOpenPreview, canOpenPreview = true, onOpenAdmin, customButtons = [] }) {
   const connColor = connStatus === 'open' ? 'bg-emerald-500' : connStatus === 'connecting' ? 'bg-amber-500' : 'bg-rose-500';
@@ -22,16 +22,22 @@ export default function Topbar({ t, theme, setTheme, lang, setLang, adminLevel, 
           ))}
 
           {canOpenPreview && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="secondary" size="sm" onClick={onOpenPreview} aria-label="Open preview">
-                    <Eye className="w-4 h-4 mr-2" /> {t.preview}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t.preview}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="secondary" size="sm" onClick={onOpenPreview} aria-label="Open preview">
+                      <Eye className="w-4 h-4 mr-2" /> {t.preview}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{t.preview}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <div className="hidden lg:flex items-center text-xs text-amber-500/90 gap-1 ml-1" title={t.embeddedNote}>
+                <Info className="w-3.5 h-3.5" />
+                <span>{t.embeddedNote}</span>
+              </div>
+            </>
           )}
 
           {showAdmin && (
